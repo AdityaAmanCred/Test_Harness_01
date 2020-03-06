@@ -4,9 +4,11 @@ import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -32,6 +34,8 @@ public class Comparator {
     private ObjectMapper objMapper;
 
     private String keysToCompare;
+
+    private static Map<String, List<String>> diffKeys = new HashedMap();
 
     public Comparator() {
         this.objMapper = new ObjectMapper();
@@ -67,6 +71,17 @@ public class Comparator {
         JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
 
         Result result = new Result(fileName, leftOnlyJson, rightOnlyJson, commonJson, diffJson);
+        for (String key : diff.keySet()) {
+            if (diffKeys.containsKey(key)) {
+                List<String> StringList = diffKeys.get(key);
+                StringList.add(fileName);
+                diffKeys.put(key, StringList);
+            } else {
+                List<String> newList = new ArrayList<>();
+                newList.add(fileName);
+                diffKeys.put(key, newList);
+            }
+        }
         return result;
     }
 
@@ -95,6 +110,19 @@ public class Comparator {
         selectedRightMap = objMapper.readValue(SquigglyUtils.stringify(mapper, objMapper.readValue(rightJson, type)), type);
     }
 
+    public JSONArray getDifferingKeys() {
+        JSONArray jsonArray = new JSONArray();
+        for (String key : diffKeys.keySet()) {
+            DifferingKeys obj = new DifferingKeys(key, diffKeys.get(key),
+                    percentage(diffKeys.get(key).size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
+            jsonArray.add(obj);
+        }
+        return jsonArray;
+    }
+
+    private Double percentage(int count, int total_count) {
+        return (double) count / total_count * 100;
+    }
 }
 
 
