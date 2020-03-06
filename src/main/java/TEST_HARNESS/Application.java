@@ -72,10 +72,11 @@ public class Application {
         }
         Comparator comparator = new Comparator();
         JSONArray results = comparator.compareAll();
+        JSONArray diffKeys = comparator.getDifferingKeys();
         ComparisonStats comparisonStats = new ComparisonStats(results);
         comparisonStats.GenerateStats();
         CompleteResults completeResults = new CompleteResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
-                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
+                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results, diffKeys);
         GenerateResults generateResults = new GenerateResults();
         generateResults.writeTofile(mapper.writeValueAsString(completeResults));
     }

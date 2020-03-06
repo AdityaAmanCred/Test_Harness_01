@@ -11,15 +11,17 @@ import lombok.ToString;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class CompleteResults {
-    private int diffCount;
+    private int DiffCount;
 
     private int IdenticalCount;
 
     private int LeftOnlyCount;
 
-    private int rightOnlyCount;
+    private int RightOnlyCount;
 
-    private int totalFileCount;
+    private int TotalFileCount;
 
-    private JSONArray results;
+    private JSONArray FileWise;
+
+    private JSONArray FieldWise;
 }
