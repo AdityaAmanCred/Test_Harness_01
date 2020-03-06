@@ -1,7 +1,5 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Application.fileNames;
-import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,7 +29,7 @@ public class DownloadFiles {
             }
 
         }
-        fileNames = getNames("PDF_DOWNLOAD_LOC");
+
     }
 
     public void downloadPDF(String id) throws IOException {

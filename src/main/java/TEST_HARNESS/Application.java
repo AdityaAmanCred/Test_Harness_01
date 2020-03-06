@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,16 +9,6 @@ import java.util.Scanner;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-enum CompareAgainst {
-    PROD,
-    MANUAL
-}
-
-enum ParserName {
-    BUMBLEBEE,
-    PANDORASTREET
-}
 
 public class Application {
     public static List<String> fileNames = new ArrayList<>();
@@ -29,9 +20,15 @@ public class Application {
     private static ParserName parserName;
 
     public static void main(String[] args) throws IOException, ParseException {
+
+        //Comment out these 3 lines if you don't have PCI access to download from Scraper.
         DownloadFiles downloadFiles = new DownloadFiles();
         downloadFiles.setFileIds();
         downloadFiles.downloadPDFs();
+
+        //Fetches fileNames from PDF_DOWNLOAD_LOC
+        fileNames = getNames("PDF_DOWNLOAD_LOC");
+
         if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
             parserName = ParserName.PANDORASTREET;
         } else {
@@ -43,6 +40,7 @@ public class Application {
             compareAgainst = CompareAgainst.MANUAL;
         }
 
+        //Fetch Responses
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
@@ -70,6 +68,8 @@ public class Application {
                 userInput = sc.nextInt();
             }
         }
+
+        //Running Comparator
         Comparator comparator = new Comparator();
         JSONArray results = comparator.compareAll();
         JSONArray diffKeys = comparator.getDifferingKeys();
@@ -79,5 +79,15 @@ public class Application {
                 comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results, diffKeys);
         GenerateResults generateResults = new GenerateResults();
         generateResults.writeTofile(mapper.writeValueAsString(completeResults));
+    }
+
+    enum CompareAgainst {
+        PROD,
+        MANUAL
+    }
+
+    enum ParserName {
+        BUMBLEBEE,
+        PANDORASTREET
     }
 }
