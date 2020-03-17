@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -20,9 +21,17 @@ import okhttp3.Response;
 public class DownloadFiles {
     private List<String> fileIds = new ArrayList<>();
 
+    private static RateLimiter rateLimiter;
+
+    public DownloadFiles(double rate) {
+        rateLimiter = RateLimiter.create(rate);
+
+    }
+
     public void downloadPDFs() throws IOException {
         for (String id : fileIds) {
             try {
+                rateLimiter.acquire(1);
                 this.downloadPDF(id);
             } catch (SocketTimeoutException e) {
                 e.printStackTrace();
@@ -49,7 +58,7 @@ public class DownloadFiles {
             OutputStream os = new FileOutputStream(file);
 
             os.write(bytes);
-            System.out.println("Downloaded: " + fileName+".pdf");
+            System.out.println("Downloaded: " + fileName + ".pdf");
             os.close();
         } catch (Exception e) {
             System.out.println("Error in downloading file: " + fileName + " :" + e);

@@ -99,7 +99,7 @@ public class Comparator {
             this.createJsonMaps();
             jsonArray.add(this.compare(fileName));
         }
-        System.out.println("Results Generated");
+        System.out.println("Results Generated for "+commonFileNames.size()+" files");
         return jsonArray;
     }
 

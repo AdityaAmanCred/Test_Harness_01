@@ -22,7 +22,7 @@ public class Application {
     public static void main(String[] args) throws IOException, ParseException {
 
         //Comment out these 3 lines if you don't have PCI access to download from Scraper.
-        DownloadFiles downloadFiles = new DownloadFiles();
+        DownloadFiles downloadFiles = new DownloadFiles(5);
         downloadFiles.setFileIds();
         downloadFiles.downloadPDFs();
 
@@ -44,18 +44,18 @@ public class Application {
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
-                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"));
+                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
         if (parserName == ParserName.BUMBLEBEE) {
-            fetchResponses.fetchBumblebeeStageResponses();
+            fetchResponses.fetchBumblebeeResponses(Environment.STAGE);
         } else {
-            fetchResponses.fetchPandoraStageResponses();
+            fetchResponses.fetchPandoraResponses(Environment.STAGE);
         }
 
         if (compareAgainst == CompareAgainst.PROD) {
             if (parserName == ParserName.BUMBLEBEE) {
-                fetchResponses.fetchBumblebeeProdResponses();
+                fetchResponses.fetchBumblebeeResponses(Environment.PROD);
             } else {
-                fetchResponses.fetchPandoraProdResponses();
+                fetchResponses.fetchPandoraResponses(Environment.PROD);
             }
         } else {
             CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
