@@ -1,16 +1,18 @@
 package TEST_HARNESS;
 
+import java.io.Serializable;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Data
-@ToString
-@EqualsAndHashCode
 @AllArgsConstructor
-public class CompleteResults {
+@EqualsAndHashCode
+@ToString
+public class FileWiseResults implements Serializable {
     private int DiffCount;
 
     private int IdenticalCount;
@@ -22,6 +24,4 @@ public class CompleteResults {
     private int TotalFileCount;
 
     private JSONArray FileWise;
-
-    private JSONArray FieldWise;
 }

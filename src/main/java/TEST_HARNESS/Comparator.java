@@ -5,8 +5,10 @@ import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
@@ -47,7 +49,7 @@ public class Comparator {
         this.rightJson = rightJson;
     }
 
-    private Result compare(String fileName) throws JsonProcessingException, ParseException {
+    private FileWiseResult compare(String fileName) throws JsonProcessingException, ParseException {
         System.out.println("Comparing responses for file: " + fileName);
         Map<String, Object> leftFlatMap = Util.flatten(selectedLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(selectedRightMap);
@@ -70,7 +72,7 @@ public class Comparator {
         String differingEntries = new ObjectMapper().writeValueAsString(diff);
         JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
 
-        Result result = new Result(fileName, leftOnlyJson, rightOnlyJson, commonJson, diffJson);
+        FileWiseResult fileWiseResult = new FileWiseResult(fileName, leftOnlyJson, rightOnlyJson, commonJson, diffJson);
         for (String key : diff.keySet()) {
             if (diffKeys.containsKey(key)) {
                 List<String> StringList = diffKeys.get(key);
@@ -82,7 +84,7 @@ public class Comparator {
                 diffKeys.put(key, newList);
             }
         }
-        return result;
+        return fileWiseResult;
     }
 
     public JSONArray compareAll() throws IOException, ParseException {
@@ -113,9 +115,20 @@ public class Comparator {
     public JSONArray getDifferingKeys() {
         JSONArray jsonArray = new JSONArray();
         for (String key : diffKeys.keySet()) {
-            DifferingKeys obj = new DifferingKeys(key, diffKeys.get(key),
-                    percentage(diffKeys.get(key).size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
-            jsonArray.add(obj);
+            if (getPropertyFromFile("application.properties").getProperty("FOCUS_FIELDS").contains(key)) {
+                Set<String> diffFileNamesSet = new HashSet<String>(diffKeys.get(key));
+                Set<String> commonFileNamesSet = new HashSet<String>(getCommonFileNames("EXPECTED_DIR", "STAGE_DIR"));
+                Set<String> differenceSet = new HashSet<String>(commonFileNamesSet);
+                differenceSet.removeAll(diffFileNamesSet);
+                DifferingKeys obj = new DifferingKeys(key, differenceSet.stream().collect(Collectors.toList()),
+                        percentage(differenceSet.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
+                jsonArray.add(obj);
+            } else {
+                DifferingKeys obj = new DifferingKeys(key, diffKeys.get(key),
+                        percentage(diffKeys.get(key).size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
+                jsonArray.add(obj);
+            }
+
         }
         return jsonArray;
     }
