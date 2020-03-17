@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.apache.commons.collections.map.HashedMap;
+import com.google.common.collect.Sets;
 
 public final class Util {
     private Util() {
@@ -46,18 +48,9 @@ public final class Util {
     }
 
     public static List<String> getCommonFileNames(String folderLoc1, String folderLoc2) {
-        Map<String, Integer> files = new HashedMap();
-        List<String> expectedOutputFiles = getNames(folderLoc1);
-        List<String> stageFiles = getNames(folderLoc2);
-        for (String file : expectedOutputFiles) {
-            files.put(file, 1);
-        }
-        for (String file : stageFiles) {
-            if (files.containsKey(file)) {
-                files.put(file, files.get(file) + 1);
-            }
-        }
-        return new ArrayList<>(files.keySet());
+        Set<String> expectedOutputFiles = getNames(folderLoc1).stream().collect(Collectors.toSet());
+        Set<String> stageFiles = getNames(folderLoc2).stream().collect(Collectors.toSet());
+        return Sets.intersection(expectedOutputFiles, stageFiles).stream().collect(Collectors.toList());
     }
 
     public static List<String> getNames(String folderName) {

@@ -1,12 +1,13 @@
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/Application.java
-/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/DifferingKeys.java
-/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/CompleteResults.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/CreateSkeletalJsons.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/FetchResponses.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/DownloadFiles.java
+/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/FieldWiseResults.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/DiffValues.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/Util.java
-/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/Result.java
+/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/FileWiseResult.java
+/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/FileWiseResults.java
+/Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/DifferingKeys.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/ComparisonStats.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/GenerateResults.java
 /Users/loaner/Desktop/Code/TH_DEVELOP/test_harness/src/main/java/TEST_HARNESS/Comparator.java

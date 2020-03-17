@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
-import lombok.AllArgsConstructor;
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -16,7 +16,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @Data
-@AllArgsConstructor
 public class FetchResponses {
     private String stageId;
 
@@ -24,87 +23,90 @@ public class FetchResponses {
 
     private String pdfLocation;
 
-    public void fetchBumbleBeeStageResponse(String pdfFileName) throws IOException {
+    private String environment;
+
+    private static RateLimiter rateLimiter;
+
+    public FetchResponses(String stageId, String prodId, String pdfLocation, double rate) {
+        this.stageId = stageId;
+        this.prodId = prodId;
+        this.pdfLocation = pdfLocation;
+        rateLimiter = RateLimiter.create(rate);
+    }
+
+    public void fetchBumbleBeeResponse(String pdfFileName, Environment env) throws IOException {
+        if (env == Environment.PROD) {
+            environment = "prod";
+        } else {
+            environment = "stg";
+        }
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", stageId)
                                                       .addFormDataPart("pdf_to_transform", pdfFileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"),
                                                                       new File(pdfLocation + pdfFileName))).build();
-        Request request = new Request.Builder().url("http://bumblebee.stg.dreamplug.net/xfmr/v1/pdf2data").method("POST", body)
+        Request request = new Request.Builder().url("http://bumblebee." + environment + ".dreamplug.net/xfmr/v1/pdf2data").method("POST", body)
                                                .addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
                                                .addHeader("cache-control", "no-cache")
                                                .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
                                                .build();
         try {
             Response response = client.newCall(request).execute();
-            this.writeStage(response.body().bytes(), pdfFileName);
+            if (response.code() >= 200 && response.code() < 300) {
+                this.saveResponse(response.body().bytes(), pdfFileName, env);
+            } else {
+                System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void fetchBumbleBeeProdResponse(String pdfFileName) throws IOException {
-        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", prodId)
-                                                      .addFormDataPart("pdf_to_transform", pdfFileName, RequestBody
-                                                              .create(MediaType.parse("application/octet-stream"),
-                                                                      new File(pdfLocation + pdfFileName))).build();
-        Request request = new Request.Builder().url("http://bumblebee.prod.dreamplug.net/xfmr/v1/pdf2data").method("POST", body)
-                                               .addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
-                                               .addHeader("cache-control", "no-cache")
-                                               .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
-                                               .build();
-        try {
-            Response response = client.newCall(request).execute();
-            this.writeProd(response.body().bytes(), pdfFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void fetchPandoraResponse(String pdfFileName, Environment env) throws IOException {
+        if (env == Environment.PROD) {
+            environment = "prod";
+        } else {
+            environment = "stg";
         }
-    }
-
-    public void fetchPandoraStageResponse(String pdfFileName) throws IOException {
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", stageId)
                                                       .addFormDataPart("file", pdfFileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"),
                                                                       new File(pdfLocation + pdfFileName))).build();
-        Request request = new Request.Builder().url("http://pandorastreet.stg.dreamplug.net/rocketpdf/api/test/pdf").method("POST", body)
-                                               .addHeader("Content-Type",
-                                                       "multipart/form-data; boundary=--------------------------204397559572218327330332").build();
+        Request request = new Request.Builder().url("http://pandorastreet." + this.environment + ".dreamplug.net/rocketpdf/api/test/pdf")
+                                               .method("POST", body).addHeader("Content-Type",
+                        "multipart/form-data; boundary=--------------------------204397559572218327330332").build();
         try {
             Response response = client.newCall(request).execute();
-            this.writeStage(response.body().bytes(), pdfFileName);
+            if (response.code() >= 200 && response.code() < 300) {
+                this.saveResponse(response.body().bytes(), pdfFileName, env);
+            } else {
+                System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void fetchPandoraProdResponse(String pdfFileName) throws IOException {
-        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", prodId)
-                                                      .addFormDataPart("file", pdfFileName, RequestBody
-                                                              .create(MediaType.parse("application/octet-stream"),
-                                                                      new File(pdfLocation + pdfFileName))).build();
-        Request request = new Request.Builder().url("http://pandorastreet.prod.dreamplug.net/rocketpdf/api/test/pdf").method("POST", body)
-                                               .addHeader("Content-Type",
-                                                       "multipart/form-data; boundary=--------------------------089951034329116001461389").build();
-        try {
-            Response response = client.newCall(request).execute();
-            this.writeProd(response.body().bytes(), pdfFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void saveResponse(byte[] bytes, String fileName, Environment env) {
+        File file;
+        if (env == Environment.PROD) {
+            file = new File(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
+        } else {
+            file = new File(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
         }
-    }
 
-    private void writeStage(byte[] bytes, String fileName) {
-        File file = new File(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
         try {
 
             OutputStream os = new FileOutputStream(file);
 
             os.write(bytes);
-            System.out.println("Stage response fetched for: " + fileName);
+            if (env == Environment.PROD) {
+                System.out.println("Prod response fetched for: " + fileName);
+            } else {
+                System.out.println("Stage response fetched for: " + fileName);
+            }
 
             os.close();
         } catch (Exception e) {
@@ -112,43 +114,20 @@ public class FetchResponses {
         }
     }
 
-    private void writeProd(byte[] bytes, String fileName) {
-        File file = new File(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
-        try {
-
-            OutputStream os = new FileOutputStream(file);
-
-            os.write(bytes);
-            System.out.println("Prod response fetched for: " + fileName);
-            os.close();
-        } catch (Exception e) {
-            System.out.println(fileName + ".pdf: Exception: " + e);
-        }
-    }
-
-    public void fetchBumblebeeStageResponses() throws IOException {
+    public void fetchBumblebeeResponses(Environment env) throws IOException {
         for (String fileName : Application.fileNames) {
-            this.fetchBumbleBeeStageResponse(fileName + ".pdf");
+            rateLimiter.acquire(1);
+            this.fetchBumbleBeeResponse(fileName + ".pdf", env);
         }
     }
 
-    public void fetchBumblebeeProdResponses() throws IOException {
+    public void fetchPandoraResponses(Environment env) throws IOException {
         for (String fileName : Application.fileNames) {
-            this.fetchBumbleBeeProdResponse(fileName + ".pdf");
+            rateLimiter.acquire(1);
+            this.fetchPandoraResponse(fileName + ".pdf", env);
         }
     }
 
-    public void fetchPandoraStageResponses() throws IOException {
-        for (String fileName : Application.fileNames) {
-            this.fetchPandoraStageResponse(fileName + ".pdf");
-        }
-    }
-
-    public void fetchPandoraProdResponses() throws IOException {
-        for (String fileName : Application.fileNames) {
-            this.fetchPandoraProdResponse(fileName + ".pdf");
-        }
-    }
 }
 
 
