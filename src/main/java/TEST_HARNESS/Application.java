@@ -75,10 +75,12 @@ public class Application {
         JSONArray diffKeys = comparator.getDifferingKeys();
         ComparisonStats comparisonStats = new ComparisonStats(results);
         comparisonStats.GenerateStats();
-        CompleteResults completeResults = new CompleteResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
-                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results, diffKeys);
+        FieldWiseResults fieldWiseResults = new FieldWiseResults(diffKeys);
+        FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
+                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
         GenerateResults generateResults = new GenerateResults();
-        generateResults.writeTofile(mapper.writeValueAsString(completeResults));
+        generateResults.writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
+        generateResults.writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
     }
 
     enum CompareAgainst {

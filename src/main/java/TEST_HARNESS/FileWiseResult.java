@@ -11,7 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Result implements Serializable {
+public class FileWiseResult implements Serializable {
     private String fileName;
 
     private JSONObject keysOnlyOnLeft;

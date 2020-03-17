@@ -26,17 +26,17 @@ public class ComparisonStats {
         totalFileCount = results.size();
         Iterator itr = results.iterator();
         while (itr.hasNext()) {
-            Result result = (Result) itr.next();
-            if (result.getKeysOnlyOnLeft().size() > 0) {
+            FileWiseResult fileWiseResult = (FileWiseResult) itr.next();
+            if (fileWiseResult.getKeysOnlyOnLeft().size() > 0) {
                 LeftOnlyCount++;
             }
-            if (result.getKeysOnlyOnRight().size() > 0) {
+            if (fileWiseResult.getKeysOnlyOnRight().size() > 0) {
                 rightOnlyCount++;
             }
-            if (result.getDifferingKeys().size() > 0) {
+            if (fileWiseResult.getDifferingKeys().size() > 0) {
                 diffCount++;
             }
-            if (result.getKeysOnlyOnLeft().size() == 0 && result.getKeysOnlyOnRight().size() == 0 && result.getDifferingKeys().size() == 0) {
+            if (fileWiseResult.getKeysOnlyOnLeft().size() == 0 && fileWiseResult.getKeysOnlyOnRight().size() == 0 && fileWiseResult.getDifferingKeys().size() == 0) {
                 IdenticalCount++;
             }
         }
