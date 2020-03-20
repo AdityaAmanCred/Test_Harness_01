@@ -5,10 +5,8 @@ import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
@@ -25,9 +23,9 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
 public class Comparator {
-    private Map<String, Object> selectedLeftMap;
+    private Map<String, Object> filteredLeftMap;
 
-    private Map<String, Object> selectedRightMap;
+    private Map<String, Object> filteredRightMap;
 
     private String leftJson;
 
@@ -38,6 +36,8 @@ public class Comparator {
     private String keysToCompare;
 
     private static Map<String, List<String>> diffKeys = new HashedMap();
+
+    private static Map<String, JSONArray> diffKeys2 = new HashedMap();
 
     public Comparator() {
         this.objMapper = new ObjectMapper();
@@ -51,8 +51,8 @@ public class Comparator {
 
     private FileWiseResult compare(String fileName) throws JsonProcessingException, ParseException {
         System.out.println("Comparing responses for file: " + fileName);
-        Map<String, Object> leftFlatMap = Util.flatten(selectedLeftMap);
-        Map<String, Object> rightFlatMap = Util.flatten(selectedRightMap);
+        Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
+        Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
 
         MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
 
@@ -66,9 +66,10 @@ public class Comparator {
         String identicalFields = new ObjectMapper().writeValueAsString(difference.entriesInCommon());
         JSONObject commonJson = (JSONObject) parser.parse(identicalFields);
 
-        Map<String, Object> diff = difference.entriesDiffering().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+        Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                 e -> new DiffValues(e.getValue().leftValue() != null ? e.getValue().leftValue().toString() : "null",
                         e.getValue().rightValue() != null ? e.getValue().rightValue().toString() : "null")));
+
         String differingEntries = new ObjectMapper().writeValueAsString(diff);
         JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
 
@@ -82,6 +83,18 @@ public class Comparator {
                 List<String> newList = new ArrayList<>();
                 newList.add(fileName);
                 diffKeys.put(key, newList);
+            }
+        }
+        for (String key : diff.keySet()) {
+            if (diffKeys2.containsKey(key)) {
+                JSONArray varList = diffKeys2.get(key);
+
+                varList.add(new Variance(fileName, diff.get(key).getExpectedValue(), diff.get(key).getCapturedValue()));
+                diffKeys2.put(key, varList);
+            } else {
+                JSONArray newList = new JSONArray();
+                newList.add(new Variance(fileName, diff.get(key).getExpectedValue(), diff.get(key).getCapturedValue()));
+                diffKeys2.put(key, newList);
             }
         }
         return fileWiseResult;
@@ -99,7 +112,7 @@ public class Comparator {
             this.createJsonMaps();
             jsonArray.add(this.compare(fileName));
         }
-        System.out.println("Results Generated for "+commonFileNames.size()+" files");
+        System.out.println("Results Generated for " + commonFileNames.size() + " files");
         return jsonArray;
     }
 
@@ -108,27 +121,21 @@ public class Comparator {
 
         TypeReference<Map<String, Object>> type = new TypeReference<Map<String, Object>>() {};
 
-        selectedLeftMap = objMapper.readValue(SquigglyUtils.stringify(mapper, objMapper.readValue(leftJson, type)), type);
-        selectedRightMap = objMapper.readValue(SquigglyUtils.stringify(mapper, objMapper.readValue(rightJson, type)), type);
+        filteredLeftMap = objMapper.readValue(SquigglyUtils.stringify(mapper, objMapper.readValue(leftJson, type)), type);
+        filteredRightMap = objMapper.readValue(SquigglyUtils.stringify(mapper, objMapper.readValue(rightJson, type)), type);
     }
 
-    public JSONArray getDifferingKeys() {
-        JSONArray jsonArray = new JSONArray();
-        for (String key : diffKeys.keySet()) {
-            if (getPropertyFromFile("application.properties").getProperty("FOCUS_FIELDS").contains(key)) {
-                Set<String> diffFileNamesSet = new HashSet<String>(diffKeys.get(key));
-                Set<String> commonFileNamesSet = new HashSet<String>(getCommonFileNames("EXPECTED_DIR", "STAGE_DIR"));
-                Set<String> differenceSet = new HashSet<String>(commonFileNamesSet);
-                differenceSet.removeAll(diffFileNamesSet);
-                DifferingKeys obj = new DifferingKeys(key, differenceSet.stream().collect(Collectors.toList()),
-                        percentage(differenceSet.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
-                jsonArray.add(obj);
-            } else {
-                DifferingKeys obj = new DifferingKeys(key, diffKeys.get(key),
-                        percentage(diffKeys.get(key).size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()));
-                jsonArray.add(obj);
-            }
+    public JSONArray getVarianceArray(String key) {
+        return diffKeys2.get(key);
+    }
 
+    public JSONArray generateFieldWiseResults() {
+        JSONArray jsonArray = new JSONArray();
+        for (String key : diffKeys2.keySet()) {
+            JSONArray varianceArr = getVarianceArray(key);
+            FieldWiseResult fieldResult = new FieldWiseResult(key,
+                    percentage(varianceArr.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()), varianceArr);
+            jsonArray.add(fieldResult);
         }
         return jsonArray;
     }

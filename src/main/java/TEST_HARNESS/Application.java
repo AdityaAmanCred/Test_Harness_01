@@ -22,7 +22,7 @@ public class Application {
     public static void main(String[] args) throws IOException, ParseException {
 
         //Comment out these 3 lines if you don't have PCI access to download from Scraper.
-        DownloadFiles downloadFiles = new DownloadFiles(5);
+        DownloadFiles downloadFiles = new DownloadFiles(5.0);
         downloadFiles.setFileIds();
         downloadFiles.downloadPDFs();
 
@@ -40,7 +40,7 @@ public class Application {
             compareAgainst = CompareAgainst.MANUAL;
         }
 
-        //Fetch Responses
+        // Fetch Responses
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
@@ -72,10 +72,10 @@ public class Application {
         //Running Comparator
         Comparator comparator = new Comparator();
         JSONArray results = comparator.compareAll();
-        JSONArray diffKeys = comparator.getDifferingKeys();
         ComparisonStats comparisonStats = new ComparisonStats(results);
         comparisonStats.GenerateStats();
-        FieldWiseResults fieldWiseResults = new FieldWiseResults(diffKeys);
+        JSONArray fieldResults = comparator.generateFieldWiseResults();
+        FieldWiseResults fieldWiseResults = new FieldWiseResults(fieldResults);
         FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
                 comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
         GenerateResults generateResults = new GenerateResults();
