@@ -2,11 +2,15 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static TEST_HARNESS.Util.replaceNumbers;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
@@ -38,6 +42,8 @@ public class Comparator {
     private static Map<String, List<String>> diffKeys = new HashedMap();
 
     private static Map<String, JSONArray> diffKeys2 = new HashedMap();
+
+    private static Map<String, List<String>> aggregateMap = new HashMap<>();
 
     public Comparator() {
         this.objMapper = new ObjectMapper();
@@ -85,7 +91,9 @@ public class Comparator {
                 diffKeys.put(key, newList);
             }
         }
+
         for (String key : diff.keySet()) {
+
             if (diffKeys2.containsKey(key)) {
                 JSONArray varList = diffKeys2.get(key);
 
@@ -95,6 +103,18 @@ public class Comparator {
                 JSONArray newList = new JSONArray();
                 newList.add(new Variance(fileName, diff.get(key).getExpectedValue(), diff.get(key).getCapturedValue()));
                 diffKeys2.put(key, newList);
+            }
+        }
+        for (String key : diffKeys2.keySet()) {
+            String aggKey = replaceNumbers(key);
+            if (aggregateMap.containsKey(aggKey)) {
+                List<String> keyList = aggregateMap.get(aggKey);
+                keyList.add(key);
+                aggregateMap.put(aggKey, keyList);
+            } else {
+                List<String> keyList = new ArrayList<>();
+                keyList.add(key);
+                aggregateMap.put(aggKey, keyList);
             }
         }
         return fileWiseResult;
@@ -131,10 +151,17 @@ public class Comparator {
 
     public JSONArray generateFieldWiseResults() {
         JSONArray jsonArray = new JSONArray();
-        for (String key : diffKeys2.keySet()) {
-            JSONArray varianceArr = getVarianceArray(key);
-            FieldWiseResult fieldResult = new FieldWiseResult(key,
-                    percentage(varianceArr.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size()), varianceArr);
+        for (String aggKey : aggregateMap.keySet()) {
+            JSONArray varianceArr = new JSONArray();
+            Set<String> fileSet = new HashSet<>();
+            List<String> keys = aggregateMap.get(aggKey);
+            for (String key : keys) {
+                JSONArray tmpVarArr = getVarianceArray(key);
+                varianceArr.addAll(tmpVarArr);
+                fileSet.addAll(getFileNamesFromArray(tmpVarArr));
+            }
+            Double varPercentage = percentage(fileSet.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size());
+            FieldWiseResult fieldResult = new FieldWiseResult(aggKey, varPercentage, varianceArr);
             jsonArray.add(fieldResult);
         }
         return jsonArray;
@@ -143,6 +170,15 @@ public class Comparator {
     private Double percentage(int count, int total_count) {
         return (double) count / total_count * 100;
     }
+
+    public Set<String> getFileNamesFromArray(JSONArray jsonArray) {
+        Set<String> files = new HashSet<>();
+        for (Object obj : jsonArray) {
+            files.add(((Variance) obj).getFileName());
+        }
+        return files;
+    }
+
 }
 
 
