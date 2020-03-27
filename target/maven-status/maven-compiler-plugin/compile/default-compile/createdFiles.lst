@@ -1,4 +1,5 @@
 TEST_HARNESS/Application$CompareAgainst.class
+TEST_HARNESS/Variance.class
 TEST_HARNESS/CreateSkeletalJsons.class
 TEST_HARNESS/FieldWiseResults.class
 TEST_HARNESS/DownloadFiles.class
@@ -6,6 +7,7 @@ TEST_HARNESS/Comparator$1.class
 TEST_HARNESS/Comparator.class
 TEST_HARNESS/Application$ParserName.class
 TEST_HARNESS/DiffValues.class
+TEST_HARNESS/Environment.class
 TEST_HARNESS/Util.class
 TEST_HARNESS/FileWiseResults.class
 TEST_HARNESS/CreateSkeletalJsons$1.class

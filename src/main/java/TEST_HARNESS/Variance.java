@@ -1,18 +1,19 @@
 package TEST_HARNESS;
 
 import java.io.Serializable;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode
-public class DifferingKeys implements Serializable {
-    private String key;
+@ToString
+public class Variance implements Serializable {
+    private String fileName;
 
-    private List<String> fileNames;
+    private String expectedValue;
 
-    private Double failurePercentage;
+    private String capturedValue;
 }

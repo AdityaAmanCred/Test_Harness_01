@@ -85,4 +85,10 @@ public final class Util {
         }
         return properties;
     }
+
+    public static String replaceNumbers(String str1) {
+        String output = str1.replaceAll("(.+?\\.)(\\d{1,})(\\..+?)", "$1n$3");
+        return output;
+    }
+
 }
