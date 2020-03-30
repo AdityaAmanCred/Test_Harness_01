@@ -105,18 +105,6 @@ public class Comparator {
                 diffKeys2.put(key, newList);
             }
         }
-        for (String key : diffKeys2.keySet()) {
-            String aggKey = replaceNumbers(key);
-            if (aggregateMap.containsKey(aggKey)) {
-                List<String> keyList = aggregateMap.get(aggKey);
-                keyList.add(key);
-                aggregateMap.put(aggKey, keyList);
-            } else {
-                List<String> keyList = new ArrayList<>();
-                keyList.add(key);
-                aggregateMap.put(aggKey, keyList);
-            }
-        }
         return fileWiseResult;
     }
 
@@ -131,6 +119,18 @@ public class Comparator {
             this.setLeftAndRightJson(JSONValue.toJSONString(l_obj), JSONValue.toJSONString(r_obj));
             this.createJsonMaps();
             jsonArray.add(this.compare(fileName));
+        }
+        for (String key : diffKeys2.keySet()) {
+            String aggKey = replaceNumbers(key);
+            if (aggregateMap.containsKey(aggKey)) {
+                List<String> keyList = aggregateMap.get(aggKey);
+                keyList.add(key);
+                aggregateMap.put(aggKey, keyList);
+            } else {
+                List<String> keyList = new ArrayList<>();
+                keyList.add(key);
+                aggregateMap.put(aggKey, keyList);
+            }
         }
         System.out.println("Results Generated for " + commonFileNames.size() + " files");
         return jsonArray;
