@@ -35,13 +35,16 @@ public class FetchResponses {
     }
 
     public void fetchBumbleBeeResponse(String pdfFileName, Environment env) throws IOException {
+        String template_id = "";
         if (env == Environment.PROD) {
             environment = "prod";
+            template_id = prodId;
         } else {
             environment = "stg";
+            template_id = stageId;
         }
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", stageId)
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", template_id)
                                                       .addFormDataPart("pdf_to_transform", pdfFileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"),
                                                                       new File(pdfLocation + pdfFileName))).build();
@@ -64,13 +67,16 @@ public class FetchResponses {
     }
 
     public void fetchPandoraResponse(String pdfFileName, Environment env) throws IOException {
+        String feed_id = "";
         if (env == Environment.PROD) {
             environment = "prod";
+            feed_id = prodId;
         } else {
             environment = "stg";
+            feed_id = stageId;
         }
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", stageId)
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", feed_id)
                                                       .addFormDataPart("file", pdfFileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"),
                                                                       new File(pdfLocation + pdfFileName))).build();
