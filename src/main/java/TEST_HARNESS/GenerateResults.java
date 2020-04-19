@@ -11,8 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.json.simple.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GenerateResults {
+    private ObjectMapper mapper = new ObjectMapper();
+
     public void writeTofile(String fileName, String results) {
         //Write JSON file
         try (FileWriter file = new FileWriter(getPropertyFromFile("application.properties").getProperty("RESULT_DIR") + fileName + ".json")) {
@@ -44,5 +48,17 @@ public class GenerateResults {
 
     public JSONArray getVarianceArray(Map<String, JSONArray> diffKeys2, String key) {
         return diffKeys2.get(key);
+    }
+
+    public void generate(JSONArray results, Comparator comparator) throws JsonProcessingException {
+        ComparisonStats comparisonStats = new ComparisonStats(results);
+        comparisonStats.GenerateStats();
+        JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
+        FieldWiseResults fieldWiseResults = new FieldWiseResults(fieldResults);
+        FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
+                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
+
+        writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
+        writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
     }
 }

@@ -1,10 +1,13 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static java.lang.System.exit;
+import static java.lang.System.getProperty;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
@@ -95,7 +98,7 @@ public class FetchResponses {
         }
     }
 
-    public void fetchOptimusResponse(String pdfFileName, Environment env, Application.ParserName otherParser) throws IOException {
+    public void fetchOptimusResponse(String pdfFileName, Environment env, ParserName otherParser) throws IOException {
 
         String feed_id = "";
         String suffix = "";
@@ -106,7 +109,7 @@ public class FetchResponses {
             environment = "stg";
             feed_id = stageId;
         }
-        if (otherParser == Application.ParserName.BUMBLEBEE) {
+        if (otherParser == ParserName.BUMBLEBEE) {
             suffix = "transformed_data";
         } else {
             suffix = "json_object";
@@ -160,23 +163,58 @@ public class FetchResponses {
     }
 
     public void fetchBumblebeeResponses(Environment env) throws IOException {
-        for (String fileName : Application.fileNames) {
+        for (String fileName : Application.getFileNames()) {
             rateLimiter.acquire(1);
             this.fetchBumbleBeeResponse(fileName + ".pdf", env);
         }
     }
 
     public void fetchPandoraResponses(Environment env) throws IOException {
-        for (String fileName : Application.fileNames) {
+        for (String fileName : Application.getFileNames()) {
             rateLimiter.acquire(1);
             this.fetchPandoraResponse(fileName + ".pdf", env);
         }
     }
 
-    public void fetchOptimusResponses(Environment env, Application.ParserName otherParser) throws IOException {
-        for (String fileName : Application.fileNames) {
+    public void fetchOptimusResponses(Environment env, ParserName otherParser) throws IOException {
+        for (String fileName : Application.getFileNames()) {
             rateLimiter.acquire(1);
             this.fetchOptimusResponse(fileName + ".pdf", env, otherParser);
+        }
+    }
+
+    public void fetch() throws IOException {
+        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus.(BUMBLEBEE/PANDORASTREET)
+        if (Application.getParserName() == ParserName.BUMBLEBEE) {
+            fetchBumblebeeResponses(Environment.STAGE);
+        } else if (Application.getParserName() == ParserName.OPTIMUS) {
+            fetchOptimusResponses(Environment.STAGE, otherParser);
+        } else {
+            fetchPandoraResponses(Environment.STAGE);
+        }
+
+        if (Application.getCompareAgainst() == CompareAgainst.PROD) {
+
+            if (Application.getParserName() == ParserName.BUMBLEBEE || (Application
+                    .getParserName() == ParserName.OPTIMUS && otherParser == ParserName.BUMBLEBEE)) {
+                fetchBumblebeeResponses(Environment.PROD);
+            } else if (Application.getParserName() == ParserName.PANDORASTREET || (Application
+                    .getParserName() == ParserName.OPTIMUS && otherParser == ParserName.PANDORASTREET)) {
+                fetchPandoraResponses(Environment.PROD);
+            } else {
+                System.out.println("Set 'otherParser' to Either BumbleeBee or Pandora");
+                exit(0);
+            }
+        } else {
+            CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
+            createSkeletalJsons.createJsonFiles();
+            Scanner sc = new Scanner(System.in);
+            int userInput = 0;
+            while (userInput != 1) {
+                System.out.println(
+                        "Make manual changes to skeletal json files in 'ExpectedResponses' directory.To proceed to perform comparison press 1. \n");
+                userInput = sc.nextInt();
+            }
         }
     }
 }

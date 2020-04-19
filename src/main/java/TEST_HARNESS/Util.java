@@ -134,4 +134,18 @@ public final class Util {
         return objectMapper.readValue(SquigglyUtils.stringify(mapper, objectMapper.readValue(JSONValue.toJSONString(object), type)), type);
     }
 
+    public static void setParameters() {
+        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
+            Application.setParserName(ParserName.PANDORASTREET);
+        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("OPTIMUS")) {
+            Application.setParserName(ParserName.OPTIMUS);
+        } else {
+            Application.setParserName(ParserName.BUMBLEBEE);
+        }
+        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equals("PROD")) {
+            Application.setCompareAgainst(CompareAgainst.PROD);
+        } else {
+            Application.setCompareAgainst(CompareAgainst.MANUAL);
+        }
+    }
 }
