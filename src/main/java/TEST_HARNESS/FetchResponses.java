@@ -95,6 +95,45 @@ public class FetchResponses {
         }
     }
 
+    public void fetchOptimusResponse(String pdfFileName, Environment env, Application.ParserName otherParser) throws IOException {
+
+        String feed_id = "";
+        String suffix = "";
+        if (env == Environment.PROD) {
+            environment = "prod";
+            feed_id = prodId;
+        } else {
+            environment = "stg";
+            feed_id = stageId;
+        }
+        if (otherParser == Application.ParserName.BUMBLEBEE) {
+            suffix = "transformed_data";
+        } else {
+            suffix = "json_object";
+        }
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("pdf_to_transform", pdfFileName,
+                RequestBody.create(MediaType.parse("application/octet-stream"), new File(pdfLocation + pdfFileName)))
+                                                      .addFormDataPart("config_id", feed_id).build();
+        Request request = new Request.Builder().url("http://optimus." + this.environment + ".dreamplug.net/pdf_to_json/file_stream/test/" + suffix)
+                                               .method("POST", body).addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
+                                               .addHeader("cache-control", "no-cache")
+                                               .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
+                                               .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.code() >= 200 && response.code() < 300) {
+                this.saveResponse(response.body().bytes(), pdfFileName, env);
+            } else {
+                System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void saveResponse(byte[] bytes, String fileName, Environment env) {
         File file;
         if (env == Environment.PROD) {
@@ -131,6 +170,13 @@ public class FetchResponses {
         for (String fileName : Application.fileNames) {
             rateLimiter.acquire(1);
             this.fetchPandoraResponse(fileName + ".pdf", env);
+        }
+    }
+
+    public void fetchOptimusResponses(Environment env, Application.ParserName otherParser) throws IOException {
+        for (String fileName : Application.fileNames) {
+            rateLimiter.acquire(1);
+            this.fetchOptimusResponse(fileName + ".pdf", env, otherParser);
         }
     }
 }

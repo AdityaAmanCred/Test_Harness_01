@@ -2,6 +2,7 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static java.lang.System.exit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class Application {
 
         if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
             parserName = ParserName.PANDORASTREET;
+        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("OPTIMUS")) {
+            parserName = ParserName.OPTIMUS;
         } else {
             parserName = ParserName.BUMBLEBEE;
         }
@@ -40,22 +43,29 @@ public class Application {
             compareAgainst = CompareAgainst.MANUAL;
         }
 
-        // Fetch Responses
+        //Fetch Responses
+        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus.(BUMBLEBEE/PANDORASTREET)
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
                 getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
         if (parserName == ParserName.BUMBLEBEE) {
             fetchResponses.fetchBumblebeeResponses(Environment.STAGE);
+        } else if (parserName == ParserName.OPTIMUS) {
+            fetchResponses.fetchOptimusResponses(Environment.STAGE, otherParser);
         } else {
             fetchResponses.fetchPandoraResponses(Environment.STAGE);
         }
 
         if (compareAgainst == CompareAgainst.PROD) {
-            if (parserName == ParserName.BUMBLEBEE) {
+
+            if (parserName == ParserName.BUMBLEBEE || (parserName == ParserName.OPTIMUS && otherParser == ParserName.BUMBLEBEE)) {
                 fetchResponses.fetchBumblebeeResponses(Environment.PROD);
-            } else {
+            } else if (parserName == ParserName.PANDORASTREET || (parserName == ParserName.OPTIMUS && otherParser == ParserName.PANDORASTREET)) {
                 fetchResponses.fetchPandoraResponses(Environment.PROD);
+            } else {
+                System.out.println("Set 'otherParser' to Either BumbleeBee or Pandora");
+                exit(0);
             }
         } else {
             CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
@@ -74,13 +84,15 @@ public class Application {
         JSONArray results = comparator.compareAll();
         ComparisonStats comparisonStats = new ComparisonStats(results);
         comparisonStats.GenerateStats();
-        JSONArray fieldResults = comparator.generateFieldWiseResults();
+        GenerateResults generateResults = new GenerateResults();
+        JSONArray fieldResults = generateResults.generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
         FieldWiseResults fieldWiseResults = new FieldWiseResults(fieldResults);
         FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
                 comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
-        GenerateResults generateResults = new GenerateResults();
+
         generateResults.writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
         generateResults.writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
+
     }
 
     enum CompareAgainst {
@@ -90,6 +102,7 @@ public class Application {
 
     enum ParserName {
         BUMBLEBEE,
-        PANDORASTREET
+        PANDORASTREET,
+        OPTIMUS
     }
 }
