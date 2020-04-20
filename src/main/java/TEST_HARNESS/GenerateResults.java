@@ -2,6 +2,7 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getFileNamesFromArray;
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.percentage;
 import java.io.FileWriter;
@@ -57,8 +58,20 @@ public class GenerateResults {
         FieldWiseResults fieldWiseResults = new FieldWiseResults(fieldResults);
         FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
                 comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
-
+        FieldWiseResults mfResults = new FieldWiseResults(generateMFResults(comparator.getMfields()));
         writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
+        writeTofile("mandatory_fields", mapper.writeValueAsString(mfResults));
         writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
+
+    }
+
+    public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {
+        JSONArray jsonArray = new JSONArray();
+        for (String k : mfMap.keySet()) {
+            Double varPercentage = percentage(mfMap.get(k).size(), getNames("STAGE_DIR").size());
+            FieldWiseResult fieldWiseResult = new FieldWiseResult(k, varPercentage, getVarianceArray(mfMap, k));
+            jsonArray.add(fieldWiseResult);
+        }
+        return jsonArray;
     }
 }

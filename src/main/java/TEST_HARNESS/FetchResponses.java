@@ -2,7 +2,6 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import static java.lang.System.exit;
-import static java.lang.System.getProperty;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

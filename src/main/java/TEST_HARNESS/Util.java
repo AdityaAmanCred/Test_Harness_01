@@ -2,6 +2,7 @@ package TEST_HARNESS;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -147,5 +149,20 @@ public final class Util {
         } else {
             Application.setCompareAgainst(CompareAgainst.MANUAL);
         }
+    }
+
+    public static List<String> readCSVLineByLine(String fileLoc) {
+        List<String> lines = new ArrayList<>();
+        try {
+            Scanner scanner = new Scanner(new File(fileLoc));
+            while (scanner.hasNextLine()) {
+                lines.add(scanner.nextLine());
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("file NOT FOUND");
+
+        }
+        return lines;
     }
 }
