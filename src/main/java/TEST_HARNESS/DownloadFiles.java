@@ -1,6 +1,8 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static TEST_HARNESS.Util.readCSVLineByLine;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,7 +27,7 @@ public class DownloadFiles {
 
     public DownloadFiles(double rate) {
         rateLimiter = RateLimiter.create(rate);
-
+        this.setFileIds();
     }
 
     public void downloadPDFs() throws IOException {
@@ -38,7 +40,7 @@ public class DownloadFiles {
             }
 
         }
-
+        Application.setFileNames(getNames("PDF_DOWNLOAD_LOC"));
     }
 
     public void downloadPDF(String id) throws IOException {
@@ -66,16 +68,6 @@ public class DownloadFiles {
     }
 
     public void setFileIds() {
-
-        try {
-            Scanner scanner = new Scanner(new File(getPropertyFromFile("application.properties").getProperty("FILE_IDS_CSV")));
-            while (scanner.hasNextLine()) {
-                this.fileIds.add(scanner.nextLine());
-            }
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("FILE_ID file NOT FOUND");
-            e.printStackTrace();
-        }
+        fileIds = readCSVLineByLine(getPropertyFromFile("application.properties").getProperty("FILE_IDS_CSV"));
     }
 }

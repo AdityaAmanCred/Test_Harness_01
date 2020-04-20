@@ -2,19 +2,33 @@ package TEST_HARNESS;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.bohnman.squiggly.Squiggly;
+import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.google.common.collect.Sets;
 
 public final class Util {
@@ -84,5 +98,71 @@ public final class Util {
             System.out.println(e);
         }
         return properties;
+    }
+
+    public static String replaceNumbers(String str1) {
+        String output = str1.replaceAll("(.+?\\.)(\\d{1,})(\\..+?)", "$1n$3");
+        return output;
+    }
+
+    public static List<String> commaSeperatedStrings(String s) {
+        return Arrays.asList(s.split("\\,"));
+    }
+
+    public static Set<String> getFileNamesFromArray(JSONArray jsonArray) {
+        Set<String> files = new HashSet<>();
+        for (Object obj : jsonArray) {
+            files.add(((Variance) obj).getFileName());
+        }
+        return files;
+    }
+
+    public static Double percentage(int count, int total_count) {
+        return (double) count / total_count * 100;
+    }
+
+    public static JSONObject mapToJSONConverter(Map<String, Object> map) throws JsonProcessingException, ParseException {
+        String str = new ObjectMapper().writeValueAsString(map);
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(str);
+        return jsonObject;
+    }
+
+    public static Map<String, Object> createJSONMap(Object object, String keysToCompare) throws IOException {
+        ObjectMapper mapper = Squiggly.init(new ObjectMapper(), keysToCompare);
+
+        TypeReference<Map<String, Object>> type = new TypeReference<Map<String, Object>>() {};
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(SquigglyUtils.stringify(mapper, objectMapper.readValue(JSONValue.toJSONString(object), type)), type);
+    }
+
+    public static void setParameters() {
+        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
+            Application.setParserName(ParserName.PANDORASTREET);
+        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("OPTIMUS")) {
+            Application.setParserName(ParserName.OPTIMUS);
+        } else {
+            Application.setParserName(ParserName.BUMBLEBEE);
+        }
+        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equals("PROD")) {
+            Application.setCompareAgainst(CompareAgainst.PROD);
+        } else {
+            Application.setCompareAgainst(CompareAgainst.MANUAL);
+        }
+    }
+
+    public static List<String> readCSVLineByLine(String fileLoc) {
+        List<String> lines = new ArrayList<>();
+        try {
+            Scanner scanner = new Scanner(new File(fileLoc));
+            while (scanner.hasNextLine()) {
+                lines.add(scanner.nextLine());
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("file NOT FOUND");
+
+        }
+        return lines;
     }
 }

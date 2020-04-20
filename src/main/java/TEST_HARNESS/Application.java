@@ -1,95 +1,70 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static TEST_HARNESS.Util.setParameters;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class Application {
-    public static List<String> fileNames = new ArrayList<>();
-
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static List<String> fileNames = new ArrayList<>();
 
     private static CompareAgainst compareAgainst;
 
     private static ParserName parserName;
 
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void setFileNames(List<String> fileNames) {
+        Application.fileNames = fileNames;
+    }
 
-        //Comment out these 3 lines if you don't have PCI access to download from Scraper.
-        DownloadFiles downloadFiles = new DownloadFiles(5);
-        downloadFiles.setFileIds();
+    public static void setCompareAgainst(CompareAgainst compareAgainst) {
+        Application.compareAgainst = compareAgainst;
+    }
+
+    public static void setParserName(ParserName parserName) {
+        Application.parserName = parserName;
+    }
+
+    public static List<String> getFileNames() {
+        return fileNames;
+    }
+
+    public static CompareAgainst getCompareAgainst() {
+        return compareAgainst;
+    }
+
+    public static ParserName getParserName() {
+        return parserName;
+    }
+
+    public static void main(String[] args) throws IOException, ParseException {
+        //Download the PDF
+        DownloadFiles downloadFiles = new DownloadFiles(5.0);
         downloadFiles.downloadPDFs();
 
-        //Fetches fileNames from PDF_DOWNLOAD_LOC
-        fileNames = getNames("PDF_DOWNLOAD_LOC");
-
-        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
-            parserName = ParserName.PANDORASTREET;
-        } else {
-            parserName = ParserName.BUMBLEBEE;
-        }
-        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equals("PROD")) {
-            compareAgainst = CompareAgainst.PROD;
-        } else {
-            compareAgainst = CompareAgainst.MANUAL;
-        }
+        //Set ParserName and Comparison Mode
+        setParameters();
 
         //Fetch Responses
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
                 getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
-        if (parserName == ParserName.BUMBLEBEE) {
-            fetchResponses.fetchBumblebeeResponses(Environment.STAGE);
-        } else {
-            fetchResponses.fetchPandoraResponses(Environment.STAGE);
-        }
-
-        if (compareAgainst == CompareAgainst.PROD) {
-            if (parserName == ParserName.BUMBLEBEE) {
-                fetchResponses.fetchBumblebeeResponses(Environment.PROD);
-            } else {
-                fetchResponses.fetchPandoraResponses(Environment.PROD);
-            }
-        } else {
-            CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
-            createSkeletalJsons.createJsonFiles();
-            Scanner sc = new Scanner(System.in);
-            int userInput = 0;
-            while (userInput != 1) {
-                System.out.println(
-                        "Make manual changes to skeletal json files in 'ExpectedResponses' directory.To proceed to perform comparison press 1. \n");
-                userInput = sc.nextInt();
-            }
-        }
+        fetchResponses.fetch();
 
         //Running Comparator
         Comparator comparator = new Comparator();
         JSONArray results = comparator.compareAll();
-        JSONArray diffKeys = comparator.getDifferingKeys();
-        ComparisonStats comparisonStats = new ComparisonStats(results);
-        comparisonStats.GenerateStats();
-        FieldWiseResults fieldWiseResults = new FieldWiseResults(diffKeys);
-        FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
-                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
+
+        //Generate Results
         GenerateResults generateResults = new GenerateResults();
-        generateResults.writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
-        generateResults.writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
+        generateResults.generate(results, comparator);
     }
 
-    enum CompareAgainst {
-        PROD,
-        MANUAL
-    }
-
-    enum ParserName {
-        BUMBLEBEE,
-        PANDORASTREET
-    }
 }

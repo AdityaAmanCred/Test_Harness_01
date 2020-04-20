@@ -2,7 +2,6 @@ package TEST_HARNESS;
 
 import java.io.Serializable;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
