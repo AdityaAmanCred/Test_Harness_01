@@ -60,7 +60,7 @@ public class GenerateResults {
                 comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
         FieldWiseResults mfResults = new FieldWiseResults(generateMFResults(comparator.getMfields()));
         writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
-        writeTofile("mandatory_fields", mapper.writeValueAsString(mfResults));
+        writeTofile("nullcheck", mapper.writeValueAsString(mfResults));
         writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
 
     }
@@ -69,7 +69,7 @@ public class GenerateResults {
         JSONArray jsonArray = new JSONArray();
         for (String k : mfMap.keySet()) {
             Double varPercentage = percentage(mfMap.get(k).size(), getNames("STAGE_DIR").size());
-            FieldWiseResult fieldWiseResult = new FieldWiseResult(k, varPercentage, getVarianceArray(mfMap, k));
+            NullCheck fieldWiseResult = new NullCheck(k, varPercentage, getVarianceArray(mfMap, k));
             jsonArray.add(fieldWiseResult);
         }
         return jsonArray;

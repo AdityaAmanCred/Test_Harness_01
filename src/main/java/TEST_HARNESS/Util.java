@@ -165,4 +165,14 @@ public final class Util {
         }
         return lines;
     }
+
+    public static Object removeRedundantDifference(Object obj) {
+        if (obj == null || obj.toString().equals("")) {
+            return "null";
+        } else if (!(obj instanceof String)) {
+            return Double.parseDouble(obj.toString());
+        } else {
+            return obj.toString();
+        }
+    }
 }

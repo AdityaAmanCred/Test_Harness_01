@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class DiffValues extends Object {
-    private String expectedValue;
+    private Object expectedValue;
 
-    private String capturedValue;
+    private Object capturedValue;
 }
