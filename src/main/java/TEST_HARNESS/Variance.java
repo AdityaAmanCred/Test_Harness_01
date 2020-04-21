@@ -13,7 +13,7 @@ import lombok.ToString;
 public class Variance implements Serializable {
     private String fileName;
 
-    private String expectedValue;
+    private Object expectedValue;
 
-    private String capturedValue;
+    private Object capturedValue;
 }

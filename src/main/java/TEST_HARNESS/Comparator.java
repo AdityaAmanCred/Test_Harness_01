@@ -2,18 +2,15 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.createJSONMap;
 import static TEST_HARNESS.Util.getCommonFileNames;
-import static TEST_HARNESS.Util.getFileNamesFromArray;
-import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.mapToJSONConverter;
-import static TEST_HARNESS.Util.percentage;
 import static TEST_HARNESS.Util.readCSVLineByLine;
+import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,16 +65,15 @@ public class Comparator {
 
         JSONObject commonJson = mapToJSONConverter(difference.entriesInCommon());
 
-        Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                e -> new DiffValues(e.getValue().leftValue() != null ? e.getValue().leftValue().toString() : "null",
-                        e.getValue().rightValue() != null ? e.getValue().rightValue().toString() : "null")));
+        Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(
+                Collectors.toMap(Map.Entry::getKey, e -> new DiffValues(e.getValue().leftValue(), e.getValue().rightValue())));
 
         String differingEntries = new ObjectMapper().writeValueAsString(diff);
         JSONParser parser = new JSONParser();
         JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
         FileWiseResult fileWiseResult = new FileWiseResult(fileName, leftOnlyJson, rightOnlyJson, commonJson, diffJson);
         updateDiffKeys(diff, fileName);
-        updateMFMap(fileName);
+        updateNullCheckMap(fileName);
         return fileWiseResult;
     }
 
@@ -115,21 +111,25 @@ public class Comparator {
 
     public void updateDiffKeys(Map<String, DiffValues> diff, String fileName) {
         for (String key : diff.keySet()) {
-
+            JSONArray varList;
             if (diffKeys.containsKey(key)) {
-                JSONArray varList = diffKeys.get(key);
+                varList = diffKeys.get(key);
 
-                varList.add(new Variance(fileName, diff.get(key).getExpectedValue(), diff.get(key).getCapturedValue()));
-                diffKeys.put(key, varList);
             } else {
-                JSONArray newList = new JSONArray();
-                newList.add(new Variance(fileName, diff.get(key).getExpectedValue(), diff.get(key).getCapturedValue()));
-                diffKeys.put(key, newList);
+                varList = new JSONArray();
+            }
+            Variance variance = new Variance(fileName, removeRedundantDifference(diff.get(key).getExpectedValue()),
+                    removeRedundantDifference(diff.get(key).getCapturedValue()));
+            if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
+                varList.add(variance);
+            }
+            if (varList.size() > 0) {
+                diffKeys.put(key, varList);
             }
         }
     }
 
-    public void updateMFMap(String fileName) {
+    public void updateNullCheckMap(String fileName) {
         Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
         Set<String> ValidMF = Sets.intersection(mandatoryFields, rightFlatMap.keySet());
@@ -142,13 +142,17 @@ public class Comparator {
                     tmpVarArr = new JSONArray();
                 }
 
-                Variance variance = new Variance(fileName, leftFlatMap.get(k) != null ? leftFlatMap.get(k).toString() : null,
-                        rightFlatMap.get(k) != null ? rightFlatMap.get(k).toString() : null);
-                tmpVarArr.add(variance);
-                mfields.put(k, tmpVarArr);
+                Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
+                if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
+                    tmpVarArr.add(variance);
+                }
+                if (tmpVarArr.size() > 0) {
+                    mfields.put(k, tmpVarArr);
+                }
             }
         }
     }
+
 }
 
 
