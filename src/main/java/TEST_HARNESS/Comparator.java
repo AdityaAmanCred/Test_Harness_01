@@ -164,8 +164,12 @@ public class Comparator {
                 jsonArray = new JSONArray();
             }
             File file = new File(fileName, map.get(k) != null ? map.get(k) : "null");
-            jsonArray.add(file);
-            map2.put(k, jsonArray);
+            if (map.get(k) != null && !map.get(k).toString().equals("")) {
+                jsonArray.add(file);
+            }
+            if (jsonArray.size() > 0) {
+                map2.put(k, jsonArray);
+            }
         }
     }
 }
