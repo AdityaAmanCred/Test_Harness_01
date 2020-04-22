@@ -24,7 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import lombok.Getter;
 
 public class Comparator {
@@ -43,6 +42,12 @@ public class Comparator {
     @Getter
     private Map<String, List<String>> aggregateMap = new HashMap<>();
 
+    @Getter
+    private Map<String, JSONArray> keysOnLeft = new HashMap<>();
+
+    @Getter
+    private Map<String, JSONArray> keysOnRight = new HashMap<>();
+
     private Set<String> mandatoryFields;
 
     public Comparator() {
@@ -51,7 +56,7 @@ public class Comparator {
                 Collectors.toSet());
     }
 
-    private FileWiseResult compare(String fileName) throws JsonProcessingException, ParseException {
+    private void compare(String fileName) throws JsonProcessingException, ParseException {
 
         System.out.println("Comparing responses for file: " + fileName);
         Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
@@ -59,22 +64,17 @@ public class Comparator {
 
         MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
 
-        JSONObject leftOnlyJson = mapToJSONConverter(difference.entriesOnlyOnLeft());
-
-        JSONObject rightOnlyJson = mapToJSONConverter(difference.entriesOnlyOnRight());
-
-        JSONObject commonJson = mapToJSONConverter(difference.entriesInCommon());
+        updateMap(difference.entriesOnlyOnLeft(), keysOnLeft, fileName);
+        updateMap(difference.entriesOnlyOnRight(), keysOnRight, fileName);
 
         Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(
                 Collectors.toMap(Map.Entry::getKey, e -> new DiffValues(e.getValue().leftValue(), e.getValue().rightValue())));
-
-        String differingEntries = new ObjectMapper().writeValueAsString(diff);
-        JSONParser parser = new JSONParser();
-        JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
-        FileWiseResult fileWiseResult = new FileWiseResult(fileName, leftOnlyJson, rightOnlyJson, new DummyPOJO(), new DummyPOJO());
+        //
+        //        String differingEntries = new ObjectMapper().writeValueAsString(diff);
+        //        JSONParser parser = new JSONParser();
+        //        JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
         updateDiffKeys(diff, fileName);
         updateNullCheckMap(fileName);
-        return fileWiseResult;
     }
 
     public JSONArray compareAll() throws IOException, ParseException {
@@ -87,7 +87,7 @@ public class Comparator {
                     .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
-            jsonArray.add(this.compare(fileName));
+            compare(fileName);
         }
         generateAggregateMap();
         System.out.println("Results Generated for " + commonFileNames.size() + " files");
@@ -145,7 +145,7 @@ public class Comparator {
                 }
 
                 Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
-                //if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
+                //if (!variance.getCapturedValue().equals(variance.getExpectedValue())) { //Uncomment to remove null-"" pairs
                 tmpVarArr.add(variance);
                 // }
                 if (tmpVarArr.size() > 0) {
@@ -153,7 +153,20 @@ public class Comparator {
                 }
             }
         }
-        //System.out.println("h");
+    }
+
+    public void updateMap(Map<String, Object> map, Map<String, JSONArray> map2, String fileName) {
+        for (String k : map.keySet()) {
+            JSONArray jsonArray;
+            if (map2.containsKey(k)) {
+                jsonArray = map2.get(k);
+            } else {
+                jsonArray = new JSONArray();
+            }
+            File file = new File(fileName, map.get(k) != null ? map.get(k) : "null");
+            jsonArray.add(file);
+            map2.put(k, jsonArray);
+        }
     }
 }
 
