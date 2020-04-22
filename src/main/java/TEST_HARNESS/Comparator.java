@@ -71,7 +71,7 @@ public class Comparator {
         String differingEntries = new ObjectMapper().writeValueAsString(diff);
         JSONParser parser = new JSONParser();
         JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
-        FileWiseResult fileWiseResult = new FileWiseResult(fileName, leftOnlyJson, rightOnlyJson, commonJson, diffJson);
+        FileWiseResult fileWiseResult = new FileWiseResult(fileName, leftOnlyJson, rightOnlyJson, new DummyPOJO(), new DummyPOJO());
         updateDiffKeys(diff, fileName);
         updateNullCheckMap(fileName);
         return fileWiseResult;
@@ -132,9 +132,11 @@ public class Comparator {
     public void updateNullCheckMap(String fileName) {
         Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
-        Set<String> ValidMF = Sets.intersection(mandatoryFields, rightFlatMap.keySet());
-        for (String k : ValidMF) {
-            if (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals("")) {
+        for (String k : mandatoryFields) {
+            if (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals("") || rightFlatMap.get(k).toString()
+                                                                                                        .equals("null") || rightFlatMap
+                    .containsKey(k) == false) {
+
                 JSONArray tmpVarArr;
                 if (mfields.containsKey(k)) {
                     tmpVarArr = mfields.get(k);
@@ -143,16 +145,16 @@ public class Comparator {
                 }
 
                 Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
-                if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
-                    tmpVarArr.add(variance);
-                }
+                //if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
+                tmpVarArr.add(variance);
+                // }
                 if (tmpVarArr.size() > 0) {
                     mfields.put(k, tmpVarArr);
                 }
             }
         }
+        //System.out.println("h");
     }
-
 }
 
 

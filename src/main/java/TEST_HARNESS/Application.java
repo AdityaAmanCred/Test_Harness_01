@@ -52,11 +52,11 @@ public class Application {
         setParameters();
 
         //Fetch Responses
-        FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
-                getPropertyFromFile("application.properties").getProperty("PROD_ID"),
-
-                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
-        fetchResponses.fetch();
+        //        FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
+        //                getPropertyFromFile("application.properties").getProperty("PROD_ID"),
+        //
+        //                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
+        //        fetchResponses.fetch();
 
         //Running Comparator
         Comparator comparator = new Comparator();
