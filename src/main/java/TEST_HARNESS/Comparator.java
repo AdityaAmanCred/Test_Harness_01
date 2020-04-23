@@ -3,7 +3,6 @@ package TEST_HARNESS;
 import static TEST_HARNESS.Util.createJSONMap;
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
-import static TEST_HARNESS.Util.mapToJSONConverter;
 import static TEST_HARNESS.Util.readCSVLineByLine;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
@@ -11,17 +10,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import lombok.Getter;
@@ -50,6 +48,8 @@ public class Comparator {
 
     private Set<String> mandatoryFields;
 
+    private Set<String> allfields = new HashSet<>();
+
     public Comparator() {
         keysToCompare = getPropertyFromFile("application.properties").getProperty("KEY_FILTER");
         mandatoryFields = readCSVLineByLine(getPropertyFromFile("application.properties").getProperty("MANDATORY_FIELDS_CSV")).stream().collect(
@@ -61,7 +61,8 @@ public class Comparator {
         System.out.println("Comparing responses for file: " + fileName);
         Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
-
+        leftFlatMap.keySet().forEach(k -> allfields.add(replaceNumbers(k)));
+        rightFlatMap.keySet().forEach(k -> allfields.add(replaceNumbers(k)));
         MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
 
         updateMap(difference.entriesOnlyOnLeft(), keysOnLeft, fileName);
@@ -69,10 +70,7 @@ public class Comparator {
 
         Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(
                 Collectors.toMap(Map.Entry::getKey, e -> new DiffValues(e.getValue().leftValue(), e.getValue().rightValue())));
-        //
-        //        String differingEntries = new ObjectMapper().writeValueAsString(diff);
-        //        JSONParser parser = new JSONParser();
-        //        JSONObject diffJson = (JSONObject) parser.parse(differingEntries);
+
         updateDiffKeys(diff, fileName);
         updateNullCheckMap(fileName);
     }
@@ -87,10 +85,12 @@ public class Comparator {
                     .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
+
             compare(fileName);
         }
         generateAggregateMap();
         System.out.println("Results Generated for " + commonFileNames.size() + " files");
+        allfields.stream().forEach(s -> replaceNumbers(s));
         return jsonArray;
     }
 
@@ -132,7 +132,7 @@ public class Comparator {
     public void updateNullCheckMap(String fileName) {
         Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
-        for (String k : mandatoryFields) {
+        for (String k : allfields) {
             if (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals("") || rightFlatMap.get(k).toString()
                                                                                                         .equals("null") || rightFlatMap
                     .containsKey(k) == false) {
@@ -145,9 +145,10 @@ public class Comparator {
                 }
 
                 Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
-                //if (!variance.getCapturedValue().equals(variance.getExpectedValue())) { //Uncomment to remove null-"" pairs
-                tmpVarArr.add(variance);
-                // }
+                if (!variance.getCapturedValue().equals(variance.getExpectedValue()) && !fileName
+                        .equals("91cc9348-520d-4389-bb92-5110e90c0773")) {//Uncomment to remove null-"" pairs//
+                    tmpVarArr.add(variance);
+                }
                 if (tmpVarArr.size() > 0) {
                     mfields.put(k, tmpVarArr);
                 }
@@ -165,7 +166,10 @@ public class Comparator {
             }
             File file = new File(fileName, map.get(k) != null ? map.get(k) : "null");
             if (map.get(k) != null && !map.get(k).toString().equals("")) {
-                jsonArray.add(file);
+
+                if (!fileName.equals("91cc9348-520d-4389-bb92-5110e90c0773")) {
+                    jsonArray.add(file);
+                }
             }
             if (jsonArray.size() > 0) {
                 map2.put(k, jsonArray);

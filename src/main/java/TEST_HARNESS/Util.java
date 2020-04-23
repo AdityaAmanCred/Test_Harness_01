@@ -169,7 +169,7 @@ public final class Util {
     public static Object removeRedundantDifference(Object obj) {
         if (obj == null || obj.toString().equals("")) {
             return "null";
-        } else if (!(obj instanceof String)) {
+        } else if ((obj instanceof Double) || (obj instanceof Integer)) {
             return Double.parseDouble(obj.toString());
         } else {
             return obj.toString();

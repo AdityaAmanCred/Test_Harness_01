@@ -183,14 +183,14 @@ public class FetchResponses {
     }
 
     public void fetch() throws IOException {
-        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus.(BUMBLEBEE/PANDORASTREET)
-        if (Application.getParserName() == ParserName.BUMBLEBEE) {
-            fetchBumblebeeResponses(Environment.STAGE);
-        } else if (Application.getParserName() == ParserName.OPTIMUS) {
-            fetchOptimusResponses(Environment.STAGE, otherParser);
-        } else {
-            fetchPandoraResponses(Environment.STAGE);
-        }
+        ParserName otherParser = ParserName.BUMBLEBEE; //Used temporarily for checking stage optimus.(BUMBLEBEE/PANDORASTREET)
+        //        if (Application.getParserName() == ParserName.BUMBLEBEE) {
+        //            fetchBumblebeeResponses(Environment.STAGE);
+        //        } else if (Application.getParserName() == ParserName.OPTIMUS) {
+        //            fetchOptimusResponses(Environment.STAGE, otherParser);
+        //        } else {
+        //            fetchPandoraResponses(Environment.STAGE);
+        //        }
 
         if (Application.getCompareAgainst() == CompareAgainst.PROD) {
 
