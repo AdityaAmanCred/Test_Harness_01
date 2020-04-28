@@ -29,16 +29,15 @@ public class DownloadFiles {
     }
 
     public void downloadPDFs() throws IOException {
-        //        for (String id : fileIds) {
-        //            try {
-        //                rateLimiter.acquire(1);
-        //                this.downloadPDF(id);
-        //            } catch (SocketTimeoutException e) {
-        //                e.printStackTrace();
-        //            }
-        //
-        //        }
-        Application.setFileNames(getNames("PDF_DOWNLOAD_LOC"));
+        for (String id : fileIds) {
+            try {
+                rateLimiter.acquire(1);
+                this.downloadPDF(id);
+            } catch (SocketTimeoutException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     public void downloadPDF(String id) throws IOException {

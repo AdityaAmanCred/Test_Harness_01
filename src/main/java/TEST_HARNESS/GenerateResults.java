@@ -49,8 +49,9 @@ public class GenerateResults {
 
     public JSONArray generateMissingKeyResults(Comparator comparator, Environment env) {
         JSONArray jsonArray = new JSONArray();
-        for (String k : env == Environment.PROD ? comparator.getKeysOnLeft().keySet() : comparator.getKeysOnRight().keySet()) {
-            JSONArray fileArr = env == Environment.PROD ? comparator.getKeysOnLeft().get(k) : comparator.getKeysOnRight().get(k);
+        Set<String> nonIntersectionKeys = (env == Environment.PROD) ? comparator.getKeysOnLeft().keySet() : comparator.getKeysOnRight().keySet();
+        for (String k : nonIntersectionKeys) {
+            JSONArray fileArr = (env == Environment.PROD) ? comparator.getKeysOnLeft().get(k) : comparator.getKeysOnRight().get(k);
             jsonArray.add(new MissingKeys(k, fileArr));
         }
         return jsonArray;
@@ -60,24 +61,19 @@ public class GenerateResults {
         return diffKeys2.get(key);
     }
 
-    public void generate(JSONArray results, Comparator comparator) throws JsonProcessingException {
-        //ComparisonStats comparisonStats = new ComparisonStats(results);
-        // comparisonStats.GenerateStats();
+    public void generate(Comparator comparator) throws JsonProcessingException {
+        //        ComparisonStats comparisonStats = new ComparisonStats();
+        //        comparisonStats.GenerateStats();
         JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
-        FieldWiseResults fieldWiseResults = new FieldWiseResults(fieldResults);
-        /*FileWiseResults fileWiseResults = new FileWiseResults(comparisonStats.getDiffCount(), comparisonStats.getIdenticalCount(),
-                comparisonStats.getLeftOnlyCount(), comparisonStats.getRightOnlyCount(), comparisonStats.getTotalFileCount(), results);
-
-         */
+        FieldWiseResults fieldWise = new FieldWiseResults(fieldResults);
         FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
         FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
-        FieldWiseResults mfResults = new FieldWiseResults(generateMFResults(comparator.getMfields()));
-        writeTofile("field_wise", mapper.writeValueAsString(fieldWiseResults));
-        writeTofile("nullcheck", mapper.writeValueAsString(mfResults));
+        FieldWiseResults nullCheck = new FieldWiseResults(generateMFResults(comparator.getNullfieldMap()));
+        writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
+        writeTofile("nullcheck", mapper.writeValueAsString(nullCheck));
         writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
         writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
-        //writeTofile("file_wise", mapper.writeValueAsString(fileWiseResults));
-
+        System.out.printf("Results generated for %d files", getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size());
     }
 
     public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {

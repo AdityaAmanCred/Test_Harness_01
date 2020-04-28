@@ -51,20 +51,21 @@ public class Application {
         //Set ParserName and Comparison Mode
         setParameters();
 
-        //Fetch Responses
-        //        FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
-        //                getPropertyFromFile("application.properties").getProperty("PROD_ID"),
-        //
-        //                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
-        //        fetchResponses.fetch();
+        ////Fetch Responses
+        FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
+                getPropertyFromFile("application.properties").getProperty("PROD_ID"),
+
+                getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC"), 5);
+        fetchResponses.fetch();
 
         //Running Comparator
         Comparator comparator = new Comparator();
-        JSONArray results = comparator.compareAll();
+        comparator.compareAll();
+        comparator.nullCheck();
 
         //Generate Results
         GenerateResults generateResults = new GenerateResults();
-        generateResults.generate(results, comparator);
+        generateResults.generate(comparator);
     }
 
 }

@@ -137,14 +137,14 @@ public final class Util {
     }
 
     public static void setParameters() {
-        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("PANDORA")) {
+        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equalsIgnoreCase("PANDORA")) {
             Application.setParserName(ParserName.PANDORASTREET);
-        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equals("OPTIMUS")) {
+        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
             Application.setParserName(ParserName.OPTIMUS);
         } else {
             Application.setParserName(ParserName.BUMBLEBEE);
         }
-        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equals("PROD")) {
+        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equalsIgnoreCase("PROD")) {
             Application.setCompareAgainst(CompareAgainst.PROD);
         } else {
             Application.setCompareAgainst(CompareAgainst.MANUAL);
@@ -156,11 +156,14 @@ public final class Util {
         try {
             Scanner scanner = new Scanner(new File(fileLoc));
             while (scanner.hasNextLine()) {
-                lines.add(scanner.nextLine());
+                String s = scanner.nextLine();
+                if (s.length() > 0 && !s.trim().equalsIgnoreCase("id")) {
+                    lines.add(s.trim());
+                }
             }
             scanner.close();
         } catch (FileNotFoundException e) {
-            System.out.println("file NOT FOUND");
+            System.out.println("File NOT FOUND at" + fileLoc);
 
         }
         return lines;
