@@ -38,7 +38,6 @@ public class DownloadFiles {
             }
 
         }
-        Application.setFileNames(getNames("PDF_DOWNLOAD_LOC"));
     }
 
     public void downloadPDF(String id) throws IOException {

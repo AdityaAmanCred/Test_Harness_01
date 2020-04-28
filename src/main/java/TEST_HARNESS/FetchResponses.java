@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import static java.lang.System.exit;
 import java.io.File;
@@ -34,6 +35,7 @@ public class FetchResponses {
         this.prodId = prodId;
         this.pdfLocation = pdfLocation;
         rateLimiter = RateLimiter.create(rate);
+        Application.setFileNames(getNames("PDF_DOWNLOAD_LOC"));
     }
 
     public void fetchBumbleBeeResponse(String pdfFileName, Environment env) throws IOException {
@@ -183,7 +185,7 @@ public class FetchResponses {
     }
 
     public void fetch() throws IOException {
-        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus.(BUMBLEBEE/PANDORASTREET)
+        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus against(BUMBLEBEE/PANDORASTREET)
         if (Application.getParserName() == ParserName.BUMBLEBEE) {
             fetchBumblebeeResponses(Environment.STAGE);
         } else if (Application.getParserName() == ParserName.OPTIMUS) {
@@ -201,7 +203,7 @@ public class FetchResponses {
                     .getParserName() == ParserName.OPTIMUS && otherParser == ParserName.PANDORASTREET)) {
                 fetchPandoraResponses(Environment.PROD);
             } else {
-                System.out.println("Set 'otherParser' to Either BumbleeBee or Pandora");
+                System.out.println("Set 'otherParser' to Either Parser.BUMBLEBEE or Parser.PANDORASTREET");
                 exit(0);
             }
         } else {

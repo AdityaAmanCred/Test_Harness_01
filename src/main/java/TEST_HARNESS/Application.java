@@ -51,7 +51,7 @@ public class Application {
         //Set ParserName and Comparison Mode
         setParameters();
 
-        //Fetch Responses
+        ////Fetch Responses
         FetchResponses fetchResponses = new FetchResponses(getPropertyFromFile("application.properties").getProperty("STAGE_ID"),
                 getPropertyFromFile("application.properties").getProperty("PROD_ID"),
 
@@ -60,11 +60,12 @@ public class Application {
 
         //Running Comparator
         Comparator comparator = new Comparator();
-        JSONArray results = comparator.compareAll();
+        comparator.compareAll();
+        comparator.nullCheck();
 
         //Generate Results
         GenerateResults generateResults = new GenerateResults();
-        generateResults.generate(results, comparator);
+        generateResults.generate(comparator);
     }
 
 }
