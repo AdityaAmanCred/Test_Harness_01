@@ -37,7 +37,7 @@ public class CreateSkeletalJsons {
     }
 
     public void createJsonFiles() {
-        for (String fileName : Application.fileNames) {
+        for (String fileName : Application.getFileNames()) {
             try {
                 Object obj = new JSONParser()
                         .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));

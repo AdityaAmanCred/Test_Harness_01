@@ -1,10 +1,13 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
+import static java.lang.System.exit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
@@ -32,6 +35,7 @@ public class FetchResponses {
         this.prodId = prodId;
         this.pdfLocation = pdfLocation;
         rateLimiter = RateLimiter.create(rate);
+        Application.setFileNames(getNames("PDF_DOWNLOAD_LOC"));
     }
 
     public void fetchBumbleBeeResponse(String pdfFileName, Environment env) throws IOException {
@@ -95,6 +99,45 @@ public class FetchResponses {
         }
     }
 
+    public void fetchOptimusResponse(String pdfFileName, Environment env, ParserName otherParser) throws IOException {
+
+        String feed_id = "";
+        String suffix = "";
+        if (env == Environment.PROD) {
+            environment = "prod";
+            feed_id = prodId;
+        } else {
+            environment = "stg";
+            feed_id = stageId;
+        }
+        if (otherParser == ParserName.BUMBLEBEE) {
+            suffix = "transformed_data";
+        } else {
+            suffix = "json_object";
+        }
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("pdf_to_transform", pdfFileName,
+                RequestBody.create(MediaType.parse("application/octet-stream"), new File(pdfLocation + pdfFileName)))
+                                                      .addFormDataPart("config_id", feed_id).build();
+        Request request = new Request.Builder().url("http://optimus." + this.environment + ".dreamplug.net/pdf_to_json/file_stream/test/" + suffix)
+                                               .method("POST", body).addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
+                                               .addHeader("cache-control", "no-cache")
+                                               .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
+                                               .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.code() >= 200 && response.code() < 300) {
+                this.saveResponse(response.body().bytes(), pdfFileName, env);
+            } else {
+                System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void saveResponse(byte[] bytes, String fileName, Environment env) {
         File file;
         if (env == Environment.PROD) {
@@ -121,16 +164,58 @@ public class FetchResponses {
     }
 
     public void fetchBumblebeeResponses(Environment env) throws IOException {
-        for (String fileName : Application.fileNames) {
+        for (String fileName : Application.getFileNames()) {
             rateLimiter.acquire(1);
             this.fetchBumbleBeeResponse(fileName + ".pdf", env);
         }
     }
 
     public void fetchPandoraResponses(Environment env) throws IOException {
-        for (String fileName : Application.fileNames) {
+        for (String fileName : Application.getFileNames()) {
             rateLimiter.acquire(1);
             this.fetchPandoraResponse(fileName + ".pdf", env);
+        }
+    }
+
+    public void fetchOptimusResponses(Environment env, ParserName otherParser) throws IOException {
+        for (String fileName : Application.getFileNames()) {
+            rateLimiter.acquire(1);
+            this.fetchOptimusResponse(fileName + ".pdf", env, otherParser);
+        }
+    }
+
+    public void fetch() throws IOException {
+        ParserName otherParser = ParserName.PANDORASTREET; //Used temporarily for checking stage optimus against(BUMBLEBEE/PANDORASTREET)
+        if (Application.getParserName() == ParserName.BUMBLEBEE) {
+            fetchBumblebeeResponses(Environment.STAGE);
+        } else if (Application.getParserName() == ParserName.OPTIMUS) {
+            fetchOptimusResponses(Environment.STAGE, otherParser);
+        } else {
+            fetchPandoraResponses(Environment.STAGE);
+        }
+
+        if (Application.getCompareAgainst() == CompareAgainst.PROD) {
+
+            if (Application.getParserName() == ParserName.BUMBLEBEE || (Application
+                    .getParserName() == ParserName.OPTIMUS && otherParser == ParserName.BUMBLEBEE)) {
+                fetchBumblebeeResponses(Environment.PROD);
+            } else if (Application.getParserName() == ParserName.PANDORASTREET || (Application
+                    .getParserName() == ParserName.OPTIMUS && otherParser == ParserName.PANDORASTREET)) {
+                fetchPandoraResponses(Environment.PROD);
+            } else {
+                System.out.println("Set 'otherParser' to Either Parser.BUMBLEBEE or Parser.PANDORASTREET");
+                exit(0);
+            }
+        } else {
+            CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
+            createSkeletalJsons.createJsonFiles();
+            Scanner sc = new Scanner(System.in);
+            int userInput = 0;
+            while (userInput != 1) {
+                System.out.println(
+                        "Make manual changes to skeletal json files in 'ExpectedResponses' directory.To proceed to perform comparison press 1. \n");
+                userInput = sc.nextInt();
+            }
         }
     }
 }
