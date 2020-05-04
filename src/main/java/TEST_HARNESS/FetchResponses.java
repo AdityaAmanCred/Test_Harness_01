@@ -1,12 +1,10 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.getNames;
-import static TEST_HARNESS.Util.getPropertyFromFile;
+import static TEST_HARNESS.Util.saveResponse;
 import static java.lang.System.exit;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import com.google.common.util.concurrent.RateLimiter;
@@ -60,7 +58,7 @@ public class FetchResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                this.saveResponse(response.body().bytes(), pdfFileName, env);
+                saveResponse(response.body().bytes(), pdfFileName, env);
             } else {
                 System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
             }
@@ -90,7 +88,7 @@ public class FetchResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                this.saveResponse(response.body().bytes(), pdfFileName, env);
+                saveResponse(response.body().bytes(), pdfFileName, env);
             } else {
                 System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
             }
@@ -128,7 +126,7 @@ public class FetchResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                this.saveResponse(response.body().bytes(), pdfFileName, env);
+                saveResponse(response.body().bytes(), pdfFileName, env);
             } else {
                 System.out.println("On " + environment + " ResponseCode: " + response.code() + " for " + pdfFileName.split("\\.")[0]);
             }
@@ -136,31 +134,6 @@ public class FetchResponses {
             e.printStackTrace();
         }
 
-    }
-
-    private void saveResponse(byte[] bytes, String fileName, Environment env) {
-        File file;
-        if (env == Environment.PROD) {
-            file = new File(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
-        } else {
-            file = new File(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
-        }
-
-        try {
-
-            OutputStream os = new FileOutputStream(file);
-
-            os.write(bytes);
-            if (env == Environment.PROD) {
-                System.out.println("Prod response fetched for: " + fileName);
-            } else {
-                System.out.println("Stage response fetched for: " + fileName);
-            }
-
-            os.close();
-        } catch (Exception e) {
-            System.out.println(fileName + ".pdf: Exception: " + e);
-        }
     }
 
     public void fetchBumblebeeResponses(Environment env) throws IOException {

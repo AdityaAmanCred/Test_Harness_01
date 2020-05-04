@@ -64,16 +64,16 @@ public class GenerateResults {
     public void generate(Comparator comparator) throws JsonProcessingException {
         //        ComparisonStats comparisonStats = new ComparisonStats();
         //        comparisonStats.GenerateStats();
-        JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
-        FieldWiseResults fieldWise = new FieldWiseResults(fieldResults);
-        FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
-        FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
+        //        JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
+        //        FieldWiseResults fieldWise = new FieldWiseResults(fieldResults);
+        //        FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
+        //        FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
         FieldWiseResults nullCheck = new FieldWiseResults(generateMFResults(comparator.getNullfieldMap()));
-        writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
+        //        writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
         writeTofile("nullcheck", mapper.writeValueAsString(nullCheck));
-        writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
-        writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
-        System.out.printf("Results generated for %d files", getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size());
+        //        writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
+        //        writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
+        System.out.printf("Results generated for %d files", getCommonFileNames("STAGE_DIR", "STAGE_DIR").size());
     }
 
     public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {

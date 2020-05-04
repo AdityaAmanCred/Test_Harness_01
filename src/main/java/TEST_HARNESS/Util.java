@@ -3,8 +3,10 @@ package TEST_HARNESS;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -176,6 +178,31 @@ public final class Util {
             return Double.parseDouble(obj.toString());
         } else {
             return obj.toString();
+        }
+    }
+
+    public static void saveResponse(byte[] bytes, String fileName, Environment env) {
+        File file;
+        if (env == Environment.PROD) {
+            file = new File(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
+        } else {
+            file = new File(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
+        }
+
+        try {
+
+            OutputStream os = new FileOutputStream(file);
+
+            os.write(bytes);
+            if (env == Environment.PROD) {
+                System.out.println("Prod response fetched for: " + fileName);
+            } else {
+                System.out.println("Stage response fetched for: " + fileName);
+            }
+
+            os.close();
+        } catch (Exception e) {
+            System.out.println(fileName + ".pdf: Exception: " + e);
         }
     }
 

@@ -6,7 +6,6 @@ import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.readCSVLineByLine;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,10 +71,10 @@ public class Comparator {
     }
 
     public void compareAll() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
+        List<String> commonFileNames = getCommonFileNames("STAGE_DIR", "STAGE_DIR");
         for (String fileName : commonFileNames) {
             Object l_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName + ".json"));
+                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             Object r_obj = new JSONParser()
                     .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
@@ -86,10 +85,10 @@ public class Comparator {
     }
 
     public void nullCheck() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
+        List<String> commonFileNames = getCommonFileNames("STAGE_DIR", "STAGE_DIR");
         for (String fileName : commonFileNames) {
             Object l_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName + ".json"));
+                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             Object r_obj = new JSONParser()
                     .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
@@ -150,10 +149,10 @@ public class Comparator {
                 }
 
                 Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
-                if (!variance.getCapturedValue().equals(variance
-                        .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
-                    tmpVarArr.add(variance);
-                }
+                // if (!variance.getCapturedValue().equals(variance
+                // .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
+                tmpVarArr.add(variance);
+                // }
                 if (tmpVarArr.size() > 0) {
                     nullfieldMap.put(k, tmpVarArr);
                 }
