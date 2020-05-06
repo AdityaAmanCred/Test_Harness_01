@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getFileNamesFromArray;
 import static TEST_HARNESS.Util.getNames;
@@ -20,7 +21,7 @@ public class GenerateResults {
 
     public void writeTofile(String fileName, String results) {
         //Write JSON file
-        try (FileWriter file = new FileWriter(getPropertyFromFile("application.properties").getProperty("RESULT_DIR") + fileName + ".json")) {
+        try (FileWriter file = new FileWriter(fetchProperty("RESULT_DIR") + fileName + ".json")) {
             file.write(results);
             file.flush();
 
@@ -62,8 +63,8 @@ public class GenerateResults {
     }
 
     public void generate(Comparator comparator) throws JsonProcessingException {
-        //        ComparisonStats comparisonStats = new ComparisonStats();
-        //        comparisonStats.GenerateStats();
+        //ComparisonStats comparisonStats = new ComparisonStats();
+        //comparisonStats.GenerateStats();
         //        JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
         //        FieldWiseResults fieldWise = new FieldWiseResults(fieldResults);
         //        FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));

@@ -1,8 +1,8 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.createJSONMap;
+import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
-import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.readCSVLineByLine;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
@@ -47,9 +47,8 @@ public class Comparator {
     private Set<String> allfields = new HashSet<>();
 
     public Comparator() {
-        keysToCompare = getPropertyFromFile("application.properties").getProperty("KEY_FILTER");
-        nullCheckFields = readCSVLineByLine(getPropertyFromFile("application.properties").getProperty("NULLCHECK_FIELDS_CSV")).stream().collect(
-                Collectors.toSet());
+        keysToCompare = fetchProperty("KEY_FILTER");
+        nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
     }
 
     private void compare(String fileName) throws JsonProcessingException, ParseException {
@@ -71,12 +70,10 @@ public class Comparator {
     }
 
     public void compareAll() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("STAGE_DIR", "STAGE_DIR");
+        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
         for (String fileName : commonFileNames) {
-            Object l_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
-            Object r_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
+            Object l_obj = new JSONParser().parse(new FileReader(fetchProperty("EXPECTED_DIR") + fileName + ".json"));
+            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             compare(fileName);
@@ -85,12 +82,10 @@ public class Comparator {
     }
 
     public void nullCheck() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("STAGE_DIR", "STAGE_DIR");
+        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
         for (String fileName : commonFileNames) {
-            Object l_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
-            Object r_obj = new JSONParser()
-                    .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
+            Object l_obj = new JSONParser().parse(new FileReader(fetchProperty("EXPECTED_DIR") + fileName + ".json"));
+            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
             filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             updateNullCheckMap(fileName);

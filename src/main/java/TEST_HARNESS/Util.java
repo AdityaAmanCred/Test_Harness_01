@@ -71,7 +71,7 @@ public final class Util {
 
     public static List<String> getNames(String folderName) {
         List<String> stringList = new ArrayList<>();
-        File folder = new File(getPropertyFromFile("application.properties").getProperty(folderName));
+        File folder = new File(fetchProperty(folderName));
         File[] listOfFiles = folder.listFiles();
         //fileNames = new ArrayList<String>();
         for (int i = 0; i < listOfFiles.length; i++) {
@@ -138,15 +138,30 @@ public final class Util {
         return objectMapper.readValue(SquigglyUtils.stringify(mapper, objectMapper.readValue(JSONValue.toJSONString(object), type)), type);
     }
 
-    public static void setParameters() {
-        if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equalsIgnoreCase("PANDORA")) {
-            Application.setParserName(ParserName.PANDORASTREET);
-        } else if (getPropertyFromFile("application.properties").getProperty("PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
-            Application.setParserName(ParserName.OPTIMUS);
+    public static void setParsingParameters() {
+        if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
+            Application.setStageParserName(ParserName.PANDORASTREET);
+        } else if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+            Application.setStageParserName(ParserName.OPTIMUS);
+        } else if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+            Application.setStageParserName(ParserName.BUMBLEBEE);
         } else {
-            Application.setParserName(ParserName.BUMBLEBEE);
+            Application.setStageParserName(ParserName.NIL);
         }
-        if (getPropertyFromFile("application.properties").getProperty("COMPARISON_MODE").equalsIgnoreCase("PROD")) {
+        if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
+            Application.setProdParserName(ParserName.PANDORASTREET);
+        } else if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+            Application.setProdParserName(ParserName.OPTIMUS);
+        } else if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+            Application.setProdParserName(ParserName.BUMBLEBEE);
+        } else {
+            Application.setProdParserName(ParserName.NIL);
+        }
+
+    }
+
+    public static void setComparisonParameter() {
+        if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("PROD")) {
             Application.setCompareAgainst(CompareAgainst.PROD);
         } else {
             Application.setCompareAgainst(CompareAgainst.MANUAL);
@@ -181,12 +196,12 @@ public final class Util {
         }
     }
 
-    public static void saveResponse(byte[] bytes, String fileName, Environment env) {
+    public static void saveResponse(byte[] bytes, String fileName, Environment env, int fetchCounter) {
         File file;
         if (env == Environment.PROD) {
-            file = new File(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
+            file = new File(fetchProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
         } else {
-            file = new File(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
+            file = new File(fetchProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
         }
 
         try {
@@ -195,9 +210,9 @@ public final class Util {
 
             os.write(bytes);
             if (env == Environment.PROD) {
-                System.out.println("Prod response fetched for: " + fileName);
+                System.out.println("Prod response fetched for: " + fileName + " fetchedCount = " + fetchCounter);
             } else {
-                System.out.println("Stage response fetched for: " + fileName);
+                System.out.println("Stage response fetched for: " + fileName + " fetchedCount = " + fetchCounter);
             }
 
             os.close();
@@ -206,4 +221,42 @@ public final class Util {
         }
     }
 
+    public static void fetchParserResponses() {
+        setParsingParameters();
+        ParserResponses bumblebee = new Bumblebee(5.0);
+        ParserResponses pandorastreet = new Pandorastreet(5.0);
+        ParserResponses optimus = new Optimus(5.0);
+        if (Application.getStageParserName() == ParserName.BUMBLEBEE) {
+            bumblebee.fetchAllResponses(Environment.STAGE);
+        } else if (Application.getStageParserName() == ParserName.OPTIMUS) {
+            optimus.fetchAllResponses(Environment.STAGE);
+        } else if (Application.getStageParserName() == ParserName.PANDORASTREET) {
+            pandorastreet.fetchAllResponses(Environment.STAGE);
+        }
+
+        if (Application.getCompareAgainst() == CompareAgainst.PROD) {
+
+            if (Application.getProdParserName() == ParserName.BUMBLEBEE) {
+                bumblebee.fetchAllResponses(Environment.PROD);
+            } else if (Application.getProdParserName() == ParserName.PANDORASTREET) {
+                pandorastreet.fetchAllResponses(Environment.PROD);
+            } else if (Application.getProdParserName() == ParserName.OPTIMUS) {
+                optimus.fetchAllResponses(Environment.PROD);
+            }
+        } else {
+            CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
+            createSkeletalJsons.createJsonFiles();
+            Scanner sc = new Scanner(System.in);
+            int userInput = 0;
+            while (userInput != 1) {
+                System.out.println(
+                        "Make manual changes to skeletal json files in 'ExpectedResponses' directory.To proceed to perform comparison press 1. \n");
+                userInput = sc.nextInt();
+            }
+        }
+    }
+
+    public static String fetchProperty(String placeholderName) {
+        return fetchProperty(placeholderName);
+    }
 }

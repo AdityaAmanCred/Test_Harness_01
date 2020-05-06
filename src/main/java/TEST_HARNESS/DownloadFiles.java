@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.readCSVLineByLine;
@@ -51,7 +52,7 @@ public class DownloadFiles {
     }
 
     public void saveFile(byte[] bytes, String fileName) {
-        File file = new File(getPropertyFromFile("application.properties").getProperty("PDF_DOWNLOAD_LOC") + fileName + ".pdf");
+        File file = new File(fetchProperty("PDF_DOWNLOAD_LOC") + fileName + ".pdf");
         try {
 
             OutputStream os = new FileOutputStream(file);
@@ -65,6 +66,6 @@ public class DownloadFiles {
     }
 
     public void setFileIds() {
-        fileIds = readCSVLineByLine(getPropertyFromFile("application.properties").getProperty("FILE_IDS_CSV"));
+        fileIds = readCSVLineByLine(fetchProperty("FILE_IDS_CSV"));
     }
 }
