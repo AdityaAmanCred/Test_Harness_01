@@ -1,6 +1,5 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.saveResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

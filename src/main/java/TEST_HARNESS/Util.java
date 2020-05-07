@@ -3,10 +3,8 @@ package TEST_HARNESS;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,6 +154,7 @@ public final class Util {
             Application.setProdParserName(ParserName.BUMBLEBEE);
         } else {
             Application.setProdParserName(ParserName.NIL);
+            Application.setCompareAgainst(CompareAgainst.STANDALONE);
         }
 
     }
@@ -163,8 +162,10 @@ public final class Util {
     public static void setComparisonParameter() {
         if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("PROD")) {
             Application.setCompareAgainst(CompareAgainst.PROD);
-        } else {
+        } else if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("MANUAL")) {
             Application.setCompareAgainst(CompareAgainst.MANUAL);
+        } else {
+            Application.setCompareAgainst(CompareAgainst.STANDALONE);
         }
     }
 
@@ -196,31 +197,6 @@ public final class Util {
         }
     }
 
-    public static void saveResponse(byte[] bytes, String fileName, Environment env, int fetchCounter) {
-        File file;
-        if (env == Environment.PROD) {
-            file = new File(fetchProperty("EXPECTED_DIR") + fileName.split("\\.")[0] + ".json");
-        } else {
-            file = new File(fetchProperty("STAGE_DIR") + fileName.split("\\.")[0] + ".json");
-        }
-
-        try {
-
-            OutputStream os = new FileOutputStream(file);
-
-            os.write(bytes);
-            if (env == Environment.PROD) {
-                System.out.println("Prod response fetched for: " + fileName + " fetchedCount = " + fetchCounter);
-            } else {
-                System.out.println("Stage response fetched for: " + fileName + " fetchedCount = " + fetchCounter);
-            }
-
-            os.close();
-        } catch (Exception e) {
-            System.out.println(fileName + ".pdf: Exception: " + e);
-        }
-    }
-
     public static void fetchParserResponses() {
         setParsingParameters();
         ParserResponses bumblebee = new Bumblebee(5.0);
@@ -243,7 +219,7 @@ public final class Util {
             } else if (Application.getProdParserName() == ParserName.OPTIMUS) {
                 optimus.fetchAllResponses(Environment.PROD);
             }
-        } else {
+        } else if (Application.getCompareAgainst() == CompareAgainst.MANUAL) {
             CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
             createSkeletalJsons.createJsonFiles();
             Scanner sc = new Scanner(System.in);
@@ -257,6 +233,6 @@ public final class Util {
     }
 
     public static String fetchProperty(String placeholderName) {
-        return fetchProperty(placeholderName);
+        return getPropertyFromFile("application.properties").getProperty(placeholderName);
     }
 }

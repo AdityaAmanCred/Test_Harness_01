@@ -41,40 +41,20 @@ public class Application {
 
     public static void main(String[] args) throws IOException, ParseException {
         //Download the PDF
-        //        DownloadFiles downloadFiles = new DownloadFiles(5.0);
-        //        downloadFiles.downloadPDFs();
-
-        //Set ParserName and Comparison Mode
+        DownloadFiles downloadFiles = new DownloadFiles(5.0);
+        downloadFiles.downloadPDFs();
 
         ////Fetch Responses
-        //        FetchResponses fetchResponses = new FetchResponses(fetchProperty("STAGE_ID"),
-        //                fetchProperty("PROD_ID"),
-        //
-        //                fetchProperty("PDF_DOWNLOAD_LOC"), 5);
-        //        fetchResponses.fetch();
-
         //fetchParserResponses();
-        //MorningStar morningStar = new MorningStar(5.0);
-        // morningStar.fetchAllOperationsData(Environment.STAGE);
-        // morningStar.fetchAllPerfomanceData(Environment.STAGE);
-        //morningStar.fetchAllRatingsData(Environment.STAGE);
-        //morningStar.fetchAllPortfolioData(Environment.STAGE);
-        //        //Running Comparator
+        MorningStar morningStar = new MorningStar(5.0);
+        morningStar.fetchAllOperationsData(Environment.STAGE);
+
+        //Running Comparator
         Comparator comparator = new Comparator();
         comparator.compareAll();
-        comparator.nullCheck();
 
         //Generate Results
         GenerateResults generateResults = new GenerateResults();
         generateResults.generate(comparator);
-
-        //);
-
-        //        Comparator comparator = new Comparator();
-        //        comparator.compareAll();
-        //        comparator.nullCheck();
-        //        GenerateResults generateResults = new GenerateResults();
-        //        generateResults.generate(comparator);
     }
-
 }

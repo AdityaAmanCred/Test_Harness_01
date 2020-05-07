@@ -1,10 +1,8 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.saveResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;

@@ -51,43 +51,57 @@ public class Comparator {
         nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
     }
 
-    private void compare(String fileName) throws JsonProcessingException, ParseException {
+    private void compare(String fileName) throws IOException, ParseException {
 
-        System.out.println("Comparing responses for file: " + fileName);
-        Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
-        leftFlatMap.keySet().forEach(k -> allfields.add(k));
         rightFlatMap.keySet().forEach(k -> allfields.add(k));
-        MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
+        if (otherDir.equals("EXPECTED_DIR")) {
+            System.out.println("Comparing responses for file: " + fileName);
+            Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
+            leftFlatMap.keySet().forEach(k -> allfields.add(k));
+            MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
 
-        updateMap(difference.entriesOnlyOnLeft(), keysOnLeft, fileName);
-        updateMap(difference.entriesOnlyOnRight(), keysOnRight, fileName);
+            updateMap(difference.entriesOnlyOnLeft(), keysOnLeft, fileName);
+            updateMap(difference.entriesOnlyOnRight(), keysOnRight, fileName);
 
-        Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(
-                Collectors.toMap(Map.Entry::getKey, e -> new DiffValues(e.getValue().leftValue(), e.getValue().rightValue())));
+            Map<String, DiffValues> diff = difference.entriesDiffering().entrySet().stream().collect(
+                    Collectors.toMap(Map.Entry::getKey, e -> new DiffValues(e.getValue().leftValue(), e.getValue().rightValue())));
 
-        updateDiffKeys(diff, fileName);
+            updateDiffKeys(diff, fileName);
+        }
+
     }
 
     public void compareAll() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
+        List<String> commonFileNames = getCommonFileNames(otherDir, "STAGE_DIR");
         for (String fileName : commonFileNames) {
-            Object l_obj = new JSONParser().parse(new FileReader(fetchProperty("EXPECTED_DIR") + fileName + ".json"));
+            if (otherDir.equals("EXPECTED_DIR")) {
+                Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
+                filteredLeftMap = createJSONMap(l_obj, keysToCompare);
+            }
             Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
-            filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             compare(fileName);
         }
-        generateAggregateMap();
+        if (otherDir.equals("EXPECTED_DIR")) {
+            generateAggregateMap();
+        }
+        nullCheck();
     }
 
     public void nullCheck() throws IOException, ParseException {
-        List<String> commonFileNames = getCommonFileNames("EXPECTED_DIR", "STAGE_DIR");
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
+        List<String> commonFileNames = getCommonFileNames(otherDir, "STAGE_DIR");
         for (String fileName : commonFileNames) {
-            Object l_obj = new JSONParser().parse(new FileReader(fetchProperty("EXPECTED_DIR") + fileName + ".json"));
             Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
-            filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
+            if (otherDir.equals("EXPECTED_DIR")) {
+                Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
+                filteredLeftMap = createJSONMap(l_obj, keysToCompare);
+            }
+
             updateNullCheckMap(fileName);
         }
     }
@@ -128,28 +142,29 @@ public class Comparator {
     }
 
     private void updateNullCheckMap(String fileName) {
-        Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
+        Map<String, Object> leftFlatMap = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? Util.flatten(filteredLeftMap) : null;
         nullCheckFields.forEach(k -> allfields.add(k.trim()));
         for (String k : allfields) {
             if (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals("") || rightFlatMap.get(k).toString()
                                                                                                         .equals("null") || rightFlatMap
                     .containsKey(k) == false) {
 
-                JSONArray tmpVarArr;
+                JSONArray tmpArr;
                 if (nullfieldMap.containsKey(k)) {
-                    tmpVarArr = nullfieldMap.get(k);
+                    tmpArr = nullfieldMap.get(k);
                 } else {
-                    tmpVarArr = new JSONArray();
+                    tmpArr = new JSONArray();
                 }
 
-                Variance variance = new Variance(fileName, removeRedundantDifference(leftFlatMap.get(k)), "null");
+                Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName,
+                        removeRedundantDifference(leftFlatMap.get(k)), "null") : new Standalone(fileName, "null");
                 // if (!variance.getCapturedValue().equals(variance
                 // .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
-                tmpVarArr.add(variance);
+                tmpArr.add(obj);
                 // }
-                if (tmpVarArr.size() > 0) {
-                    nullfieldMap.put(k, tmpVarArr);
+                if (tmpArr.size() > 0) {
+                    nullfieldMap.put(k, tmpArr);
                 }
             }
         }
@@ -163,7 +178,7 @@ public class Comparator {
             } else {
                 jsonArray = new JSONArray();
             }
-            File file = new File(fileName, map.get(k) != null ? map.get(k) : "null");
+            Standalone file = new Standalone(fileName, map.get(k) != null ? map.get(k) : "null");
             if (map.get(k) != null && !map.get(k).toString().equals("")) {
                 jsonArray.add(file);
             }

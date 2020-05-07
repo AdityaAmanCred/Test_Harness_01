@@ -1,13 +1,8 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
-import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.readCSVLineByLine;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,7 +31,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveAPIResponse(response.body().bytes(), "operations_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "operations_" + isin, env, ++fetchCounter);
                 Environment env_prod = Environment.PROD;
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
@@ -61,7 +56,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveAPIResponse(response.body().bytes(), "perfomance_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "perfomance_" + isin, env, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -85,7 +80,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveAPIResponse(response.body().bytes(), "ratings_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "ratings_" + isin, env, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -109,7 +104,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveAPIResponse(response.body().bytes(), "portfolio_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "portfolio_" + isin, env, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -144,30 +139,6 @@ public class MorningStar extends Responses {
         for (String isin : isinList) {
             rateLimiter.acquire(1);
             fetchPortfolioData(isin, env);
-        }
-    }
-
-    public static void saveAPIResponse(byte[] bytes, String isin, Environment env, int fetchCounter) {
-        java.io.File file;
-        if (env == Environment.PROD) {
-            file = new java.io.File(fetchProperty("EXPECTED_DIR") + isin + ".json");
-        } else {
-            file = new File(fetchProperty("STAGE_DIR") + isin + ".json");
-        }
-
-        try {
-            OutputStream os = new FileOutputStream(file);
-
-            os.write(bytes);
-            if (env == Environment.PROD) {
-                System.out.println("Prod response fetched for: " + isin + " fetchedCount = " + fetchCounter);
-            } else {
-                System.out.println("Stage response fetched for: " + isin + " fetchedCount = " + fetchCounter);
-            }
-
-            os.close();
-        } catch (Exception e) {
-            System.out.println(isin + " : Exception: " + e);
         }
     }
 }

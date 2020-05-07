@@ -1,8 +1,6 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
-import static TEST_HARNESS.Util.getNames;
-import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.readCSVLineByLine;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,10 +46,10 @@ public class DownloadFiles {
         Request request = new Request.Builder().url("http://scraper.pci.dreamplug.net/scraper/v1/pdf2data/download/pdf").method("POST", body)
                                                .addHeader("Content-Type", "application/x-www-form-urlencoded").build();
         Response response = client.newCall(request).execute();
-        saveFile(response.body().bytes(), id);
+        savePDFFile(response.body().bytes(), id);
     }
 
-    public void saveFile(byte[] bytes, String fileName) {
+    public void savePDFFile(byte[] bytes, String fileName) {
         File file = new File(fetchProperty("PDF_DOWNLOAD_LOC") + fileName + ".pdf");
         try {
 
