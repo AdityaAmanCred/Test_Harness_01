@@ -49,6 +49,7 @@ public class Bumblebee extends ParserResponses {
 
     @Override
     public void fetchAllResponses(Environment env) {
+        setFetchCounter(0);
         for (String fileName : fileNames) {
             rateLimiter.acquire(1);
             this.fetchResponse(fileName + ".pdf", env);

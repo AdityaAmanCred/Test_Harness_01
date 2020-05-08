@@ -41,13 +41,15 @@ public class Application {
 
     public static void main(String[] args) throws IOException, ParseException {
         //Download the PDF
-        DownloadFiles downloadFiles = new DownloadFiles(5.0);
+        DownloadFiles downloadFiles = new DownloadFiles(10.0);
         downloadFiles.downloadPDFs();
 
         ////Fetch Responses
-        //fetchParserResponses();
-        MorningStar morningStar = new MorningStar(5.0);
-        morningStar.fetchAllOperationsData(Environment.STAGE);
+        //For fetching all Parser's data(Optimus,Bumblebee, Pandora)
+        fetchParserResponses();
+        //For fetching MorningStar data
+        //        MorningStar morningStar = new MorningStar(20.0);
+        //        morningStar.fetchAllPortfolioData(Environment.STAGE);
 
         //Running Comparator
         Comparator comparator = new Comparator();

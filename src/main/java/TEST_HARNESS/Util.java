@@ -199,9 +199,9 @@ public final class Util {
 
     public static void fetchParserResponses() {
         setParsingParameters();
-        ParserResponses bumblebee = new Bumblebee(5.0);
-        ParserResponses pandorastreet = new Pandorastreet(5.0);
-        ParserResponses optimus = new Optimus(5.0);
+        ParserResponses bumblebee = new Bumblebee(50.0);
+        ParserResponses pandorastreet = new Pandorastreet(50.0);
+        ParserResponses optimus = new Optimus(50.0);
         if (Application.getStageParserName() == ParserName.BUMBLEBEE) {
             bumblebee.fetchAllResponses(Environment.STAGE);
         } else if (Application.getStageParserName() == ParserName.OPTIMUS) {

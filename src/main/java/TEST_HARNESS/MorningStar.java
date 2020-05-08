@@ -114,6 +114,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllOperationsData(Environment env) throws IOException {
+        setFetchCounter(0);
         for (String isin : isinList) {
             rateLimiter.acquire(1);
             fetchOperationsData(isin, env);
@@ -121,6 +122,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllPerfomanceData(Environment env) throws IOException {
+        setFetchCounter(0);
         for (String isin : isinList) {
             rateLimiter.acquire(1);
             fetchPerfomanceData(isin, env);
@@ -129,6 +131,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllRatingsData(Environment env) throws IOException {
+        setFetchCounter(0);
         for (String isin : isinList) {
             rateLimiter.acquire(1);
             fetchRatingsData(isin, env);
@@ -136,6 +139,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllPortfolioData(Environment env) throws IOException {
+        setFetchCounter(0);
         for (String isin : isinList) {
             rateLimiter.acquire(1);
             fetchPortfolioData(isin, env);

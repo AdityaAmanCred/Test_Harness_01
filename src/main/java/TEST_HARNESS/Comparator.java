@@ -6,6 +6,7 @@ import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.readCSVLineByLine;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
+import static TEST_HARNESS.Util.setComparisonParameter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import lombok.Getter;
@@ -49,6 +49,7 @@ public class Comparator {
     public Comparator() {
         keysToCompare = fetchProperty("KEY_FILTER");
         nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
+        setComparisonParameter();
     }
 
     private void compare(String fileName) throws IOException, ParseException {
@@ -159,10 +160,10 @@ public class Comparator {
 
                 Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName,
                         removeRedundantDifference(leftFlatMap.get(k)), "null") : new Standalone(fileName, "null");
-                // if (!variance.getCapturedValue().equals(variance
-                // .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
-                tmpArr.add(obj);
-                // }
+                if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
+                        .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
+                    tmpArr.add(obj);
+                }
                 if (tmpArr.size() > 0) {
                     nullfieldMap.put(k, tmpArr);
                 }
