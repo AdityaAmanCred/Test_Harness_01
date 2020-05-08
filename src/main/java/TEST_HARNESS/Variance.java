@@ -1,19 +1,18 @@
 package TEST_HARNESS;
 
 import java.io.Serializable;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
-@Data
-@AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Variance implements Serializable {
-    private String fileName;
-
+@Getter
+public class Variance extends Standalone implements Serializable {
     private Object expectedValue;
 
-    private Object capturedValue;
+    public Variance(String fileName, Object capturedValue, Object expectedValue) {
+        super(fileName, capturedValue);
+        this.expectedValue = expectedValue;
+    }
 }

@@ -1,16 +1,17 @@
 package TEST_HARNESS;
 
-import org.json.simple.JSONArray;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode
-public class File {
+@ToString
+public class Standalone implements Serializable {
     private String fileName;
 
-    private Object value;
+    private Object capturedValue;
 }
-
