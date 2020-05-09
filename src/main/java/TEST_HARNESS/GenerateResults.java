@@ -1,9 +1,9 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getFileNamesFromArray;
 import static TEST_HARNESS.Util.getNames;
-import static TEST_HARNESS.Util.getPropertyFromFile;
 import static TEST_HARNESS.Util.percentage;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class GenerateResults {
 
     public void writeTofile(String fileName, String results) {
         //Write JSON file
-        try (FileWriter file = new FileWriter(getPropertyFromFile("application.properties").getProperty("RESULT_DIR") + fileName + ".json")) {
+        try (FileWriter file = new FileWriter(fetchProperty("RESULT_DIR") + fileName + ".json")) {
             file.write(results);
             file.flush();
 
@@ -62,18 +62,19 @@ public class GenerateResults {
     }
 
     public void generate(Comparator comparator) throws JsonProcessingException {
-        //        ComparisonStats comparisonStats = new ComparisonStats();
-        //        comparisonStats.GenerateStats();
-        JSONArray fieldResults = generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys());
-        FieldWiseResults fieldWise = new FieldWiseResults(fieldResults);
-        FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
-        FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
+        //ComparisonStats comparisonStats = new ComparisonStats();
+        //comparisonStats.GenerateStats();;
         FieldWiseResults nullCheck = new FieldWiseResults(generateMFResults(comparator.getNullfieldMap()));
-        writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
         writeTofile("nullcheck", mapper.writeValueAsString(nullCheck));
-        writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
-        writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
-        System.out.printf("Results generated for %d files", getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size());
+        if (Application.getCompareAgainst() != CompareAgainst.STANDALONE) {
+            FieldWiseResults fieldWise = new FieldWiseResults(generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys()));
+            FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
+            FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
+            writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
+            writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
+            writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
+        }
+        System.out.printf("Results generated for %d files", getCommonFileNames("STAGE_DIR", "STAGE_DIR").size());
     }
 
     public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {

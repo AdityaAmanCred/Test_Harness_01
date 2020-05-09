@@ -1,5 +1,7 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.fetchProperty;
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.getPropertyFromFile;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -25,7 +27,7 @@ public class CreateSkeletalJsons {
 
         try {
 
-            FileWriter file = new FileWriter(getPropertyFromFile("application.properties").getProperty("EXPECTED_DIR") + fileName + ".json");
+            FileWriter file = new FileWriter(fetchProperty("EXPECTED_DIR") + fileName + ".json");
             file.write(jsonObject.toJSONString());
             file.flush();
             file.close();
@@ -37,10 +39,9 @@ public class CreateSkeletalJsons {
     }
 
     public void createJsonFiles() {
-        for (String fileName : Application.getFileNames()) {
+        for (String fileName : getNames("StageResponses")) {
             try {
-                Object obj = new JSONParser()
-                        .parse(new FileReader(getPropertyFromFile("application.properties").getProperty("STAGE_DIR") + fileName + ".json"));
+                Object obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
 
                 JSONObject nullified = nullifyFields((JSONObject) obj);
                 writeJsonFile(fileName, nullified);

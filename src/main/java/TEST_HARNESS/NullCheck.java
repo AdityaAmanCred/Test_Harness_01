@@ -13,7 +13,7 @@ public class NullCheck extends Object {
 
     private Double NullPercentage;
 
-    private JSONArray variance;
+    private JSONArray Entities;
 }
 
 
