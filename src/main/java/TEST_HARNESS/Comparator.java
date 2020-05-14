@@ -131,8 +131,8 @@ public class Comparator {
             } else {
                 varList = new JSONArray();
             }
-            Variance variance = new Variance(fileName, removeRedundantDifference(diff.get(key).getExpectedValue()),
-                    removeRedundantDifference(diff.get(key).getCapturedValue()));
+            Variance variance = new Variance(fileName, removeRedundantDifference(diff.get(key).getCapturedValue()),
+                    removeRedundantDifference(diff.get(key).getExpectedValue()));
             if (!variance.getCapturedValue().equals(variance.getExpectedValue())) {
                 varList.add(variance);
             }
