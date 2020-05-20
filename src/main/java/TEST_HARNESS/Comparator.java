@@ -158,8 +158,8 @@ public class Comparator {
                     tmpArr = new JSONArray();
                 }
 
-                Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName,
-                        removeRedundantDifference(leftFlatMap.get(k)), "null") : new Standalone(fileName, "null");
+                Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName, "null",
+                        removeRedundantDifference(leftFlatMap.get(k))) : new Standalone(fileName, "null");
                 if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
                         .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
                     tmpArr.add(obj);
