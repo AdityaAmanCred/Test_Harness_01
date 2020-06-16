@@ -137,31 +137,43 @@ public final class Util {
     }
 
     public static void setParsingParameters() {
-        if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
-            Application.setStageParserName(ParserName.PANDORASTREET);
-        } else if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
-            Application.setStageParserName(ParserName.OPTIMUS);
-        } else if (fetchProperty("STAGE_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
-            Application.setStageParserName(ParserName.BUMBLEBEE);
+        setComparisonParameter();
+        if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET") || fetchProperty("PRIMARY_PARSER_NAME")
+                .equalsIgnoreCase("PANDORA")) {
+            Application.setPrimaryParserName(ParserName.PANDORASTREET);
+        } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+            Application.setPrimaryParserName(ParserName.OPTIMUS);
+        } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+            Application.setPrimaryParserName(ParserName.BUMBLEBEE);
         } else {
-            Application.setStageParserName(ParserName.NIL);
+            Application.setPrimaryParserName(ParserName.NIL);
         }
-        if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
-            Application.setProdParserName(ParserName.PANDORASTREET);
-        } else if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
-            Application.setProdParserName(ParserName.OPTIMUS);
-        } else if (fetchProperty("PROD_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
-            Application.setProdParserName(ParserName.BUMBLEBEE);
+        if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
+            Application.setSecondaryParserName(ParserName.PANDORASTREET);
+        } else if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+            Application.setSecondaryParserName(ParserName.OPTIMUS);
+        } else if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+            Application.setSecondaryParserName(ParserName.BUMBLEBEE);
         } else {
-            Application.setProdParserName(ParserName.NIL);
+            Application.setSecondaryParserName(ParserName.NIL);
             Application.setCompareAgainst(CompareAgainst.STANDALONE);
+        }
+        if (fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE")) {
+            Application.setPrimaryParserEnv(Environment.STAGE);
+        } else {
+            Application.setPrimaryParserEnv(Environment.PROD);
+        }
+        if (fetchProperty("SECONDARY_PARSER_ENV").equalsIgnoreCase("STAGE")) {
+            Application.setSecondaryParserEnv(Environment.STAGE);
+        } else {
+            Application.setSecondaryParserEnv(Environment.PROD);
         }
 
     }
 
     public static void setComparisonParameter() {
-        if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("PROD")) {
-            Application.setCompareAgainst(CompareAgainst.PROD);
+        if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("SECONDARY")) {
+            Application.setCompareAgainst(CompareAgainst.SECONDARY);
         } else if (fetchProperty("COMPARISON_MODE").equalsIgnoreCase("MANUAL")) {
             Application.setCompareAgainst(CompareAgainst.MANUAL);
         } else {
@@ -199,25 +211,40 @@ public final class Util {
 
     public static void fetchParserResponses() {
         setParsingParameters();
+        if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
+            System.exit(0);
+        }
         ParserResponses bumblebee = new Bumblebee(50.0);
         ParserResponses pandorastreet = new Pandorastreet(50.0);
         ParserResponses optimus = new Optimus(50.0);
-        if (Application.getStageParserName() == ParserName.BUMBLEBEE) {
-            bumblebee.fetchAllResponses(Environment.STAGE);
-        } else if (Application.getStageParserName() == ParserName.OPTIMUS) {
-            optimus.fetchAllResponses(Environment.STAGE);
-        } else if (Application.getStageParserName() == ParserName.PANDORASTREET) {
-            pandorastreet.fetchAllResponses(Environment.STAGE);
+        if (Application.getPrimaryParserName() == ParserName.BUMBLEBEE) {
+            bumblebee.setParserType(ParserResponses.ParserType.PRIMARY);
+            bumblebee.fetchAllResponses(Application.getPrimaryParserEnv());
+
+        } else if (Application.getPrimaryParserName() == ParserName.OPTIMUS) {
+            optimus.setParserType(ParserResponses.ParserType.PRIMARY);
+            optimus.fetchAllResponses(Application.getPrimaryParserEnv());
+
+        } else if (Application.getPrimaryParserName() == ParserName.PANDORASTREET) {
+            pandorastreet.setParserType(ParserResponses.ParserType.PRIMARY);
+            pandorastreet.fetchAllResponses(Application.getPrimaryParserEnv());
+
         }
 
-        if (Application.getCompareAgainst() == CompareAgainst.PROD) {
+        if (Application.getCompareAgainst() == CompareAgainst.SECONDARY) {
 
-            if (Application.getProdParserName() == ParserName.BUMBLEBEE) {
-                bumblebee.fetchAllResponses(Environment.PROD);
-            } else if (Application.getProdParserName() == ParserName.PANDORASTREET) {
-                pandorastreet.fetchAllResponses(Environment.PROD);
-            } else if (Application.getProdParserName() == ParserName.OPTIMUS) {
-                optimus.fetchAllResponses(Environment.PROD);
+            if (Application.getSecondaryParserName() == ParserName.BUMBLEBEE) {
+                bumblebee.setParserType(ParserResponses.ParserType.SECONDARY);
+                bumblebee.fetchAllResponses(Application.getSecondaryParserEnv());
+
+            } else if (Application.getSecondaryParserName() == ParserName.PANDORASTREET) {
+                pandorastreet.setParserType(ParserResponses.ParserType.SECONDARY);
+                pandorastreet.fetchAllResponses(Application.getSecondaryParserEnv());
+
+            } else if (Application.getSecondaryParserName() == ParserName.OPTIMUS) {
+                optimus.setParserType(ParserResponses.ParserType.SECONDARY);
+                optimus.fetchAllResponses(Application.getSecondaryParserEnv());
+
             }
         } else if (Application.getCompareAgainst() == CompareAgainst.MANUAL) {
             CreateSkeletalJsons createSkeletalJsons = new CreateSkeletalJsons();
@@ -234,5 +261,22 @@ public final class Util {
 
     public static String fetchProperty(String placeholderName) {
         return getPropertyFromFile("application.properties").getProperty(placeholderName);
+    }
+
+    public static boolean isValidateParserSelection() {
+        ArrayList<ParserName> parsers = new ArrayList<>();
+        parsers.add(Application.getPrimaryParserName());
+        parsers.add(Application.getSecondaryParserName());
+        if (parsers.get(0).equals(parsers.get(1)) && Application.getPrimaryParserEnv() == Application.getSecondaryParserEnv() && fetchProperty(
+                "PRIMARY_PARSER_TEMPLATE_ID").equals(fetchProperty("SECONDARY_PARSER_TEMPLATE_ID"))) {
+            System.out.println("Invalid Comparison. Can't compare identical combinations of parser,environment and template");
+            return false;
+        }
+        if (parsers.contains(ParserName.BUMBLEBEE) && parsers.contains(ParserName.PANDORASTREET)) {
+            System.out.println("Cannot compare BUMBLEEBEE responses with PANDORASTREET");
+            return false;
+        } else {
+            return true;
+        }
     }
 }

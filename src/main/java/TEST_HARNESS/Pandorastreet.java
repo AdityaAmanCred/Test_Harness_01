@@ -18,12 +18,15 @@ public class Pandorastreet extends ParserResponses {
     @Override
     public void fetchResponse(String fileName, Environment env) {
         String feed_id = "";
+        if (this.getParserType() == ParserType.PRIMARY) {
+            feed_id = this.getPrimaryParserTemplateId();
+        } else {
+            feed_id = this.getSecondaryParserTemplateId();
+        }
         if (env == Environment.PROD) {
             envName = "prod";
-            feed_id = prodId;
         } else {
             envName = "stg";
-            feed_id = stageId;
         }
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", feed_id)
@@ -36,7 +39,7 @@ public class Pandorastreet extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), fileName, ++fetchCounter);
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }

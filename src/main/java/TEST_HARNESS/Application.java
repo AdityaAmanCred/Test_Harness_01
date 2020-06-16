@@ -11,9 +11,29 @@ import lombok.Setter;
 public class Application {
     private static CompareAgainst compareAgainst;
 
-    private static ParserName stageParserName;
+    private static ParserName primaryParserName;
 
-    private static ParserName prodParserName;
+    private static ParserName secondaryParserName;
+
+    private static Environment primaryParserEnv;
+
+    private static Environment secondaryParserEnv;
+
+    public static Environment getPrimaryParserEnv() {
+        return primaryParserEnv;
+    }
+
+    public static Environment getSecondaryParserEnv() {
+        return secondaryParserEnv;
+    }
+
+    public static void setPrimaryParserEnv(Environment primaryParserEnv) {
+        Application.primaryParserEnv = primaryParserEnv;
+    }
+
+    public static void setSecondaryParserEnv(Environment secondaryParserEnv) {
+        Application.secondaryParserEnv = secondaryParserEnv;
+    }
 
     public static void setCompareAgainst(CompareAgainst compareAgainst) {
         Application.compareAgainst = compareAgainst;
@@ -23,33 +43,35 @@ public class Application {
         return compareAgainst;
     }
 
-    public static ParserName getStageParserName() {
-        return stageParserName;
+    public static ParserName getPrimaryParserName() {
+        return primaryParserName;
     }
 
-    public static void setStageParserName(ParserName parserName) {
-        Application.stageParserName = parserName;
+    public static void setPrimaryParserName(ParserName parserName) {
+        Application.primaryParserName = parserName;
     }
 
-    public static ParserName getProdParserName() {
-        return prodParserName;
+    public static ParserName getSecondaryParserName() {
+        return secondaryParserName;
     }
 
-    public static void setProdParserName(ParserName parserName) {
-        Application.prodParserName = parserName;
+    public static void setSecondaryParserName(ParserName parserName) {
+        Application.secondaryParserName = parserName;
     }
 
     public static void main(String[] args) throws IOException, ParseException {
         //Download the PDF
-        DownloadFiles downloadFiles = new DownloadFiles(10.0);
-        downloadFiles.downloadPDFs();
+        //        DownloadFiles downloadFiles = new DownloadFiles(10.0);
+        //        downloadFiles.downloadPDFs();
 
         ////Fetch Responses
         //For fetching all Parser's data(Optimus,Bumblebee, Pandora)
-        fetchParserResponses();
+        //fetchParserResponses();
+
         //For fetching MorningStar data
         //        MorningStar morningStar = new MorningStar(20.0);
-        //        morningStar.fetchAllPortfolioData(Environment.STAGE);
+        //        morningStar.setParserType(Responses.ParserType.PRIMARY);
+        //        morningStar.fetchAllOperationsData(Environment.STAGE);
 
         //Running Comparator
         Comparator comparator = new Comparator();

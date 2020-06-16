@@ -40,7 +40,7 @@ public class GenerateResults {
                 varianceArr.addAll(tmpVarArr);
                 fileSet.addAll(getFileNamesFromArray(tmpVarArr));
             }
-            Double varPercentage = percentage(fileSet.size(), getCommonFileNames("EXPECTED_DIR", "STAGE_DIR").size());
+            Double varPercentage = percentage(fileSet.size(), getCommonFileNames("SECONDARY_DIR", "PRIMARY_DIR").size());
             FieldWiseResult fieldResult = new FieldWiseResult(aggKey, varPercentage, varianceArr);
             jsonArray.add(fieldResult);
         }
@@ -74,13 +74,13 @@ public class GenerateResults {
             writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
             writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
         }
-        System.out.printf("Results generated for %d files", getCommonFileNames("STAGE_DIR", "STAGE_DIR").size());
+        System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "PRIMARY_DIR").size());
     }
 
     public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {
         JSONArray jsonArray = new JSONArray();
         for (String k : mfMap.keySet()) {
-            Double varPercentage = percentage(mfMap.get(k).size(), getNames("STAGE_DIR").size());
+            Double varPercentage = percentage(mfMap.get(k).size(), getNames("PRIMARY_DIR").size());
             NullCheck fieldWiseResult = new NullCheck(k, varPercentage, getVarianceArray(mfMap, k));
             jsonArray.add(fieldWiseResult);
         }
