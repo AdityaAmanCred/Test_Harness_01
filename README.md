@@ -2,18 +2,25 @@ How to use this? :
 
 1)Edit the application.properties file to set the following variables:
 
-STAGE_ID: Template id on stage
-PROD_ID : Template id on prod
-PDF_DOWNLOAD_LOC: Location where PDFs will first be downloaeded to and later fetched from.
-EXPECTED_DIR: Location where either prod responses or skeletal jsons(Json response with all null fields) will be saved to. Later these need to be manually annotated.
-STAGE_DIR: Location where stage responses are saved to.
-PARSER_NAME: BUMBLEBEE / PROD
-COMPARISON_MODE: PROD/MANUAL
-SKELETAL_JSON_LOC: In case of 'MANUAL' TESTING, THIS FILE is replicated for each file_id.
-FILE_IDS_CSV: Absolute location of csv file containing ids(pdf ids). Make sure the ids are sans quotes.
+PRIMARY_PARSER_NAME: BUMBLEBEE / PROD /OPTIMUS
+SECONDARY_PARSER_NAME: BUMBLEBEE / PROD /OPTIMUS
+PRIMARY_PARSER_TEMPLATE_ID: Template id for primary parser
+SECONDARY_PARSER_TEMPLATE_ID : Template id on secondary parser
+PRIMARY_PARSER_ENV= Environment(stage/prod) for primary parser
+SECONDARY_PARSER_ENV=Environment(stage/prod) for secondary parser
+PDF_DOWNLOAD_LOC: Absolute location where PDFs will first be downloaeded to and later fetched from.
+SECONDARY_DIR: Absolute location where either secondary parser responses or skeletal jsons(Json response with all null fields) will be saved to. Later these need to be manually annotated.
+PRIMARY_DIR: Absolute location where primary parser responses are saved to.
+RESULT_DIR: Absolute location where results are saved to.
+COMPARISON_MODE: SECONDARY/MANUAL/STANDALONE
+NULLCHECK_FIELDS_CSV: Absolute location of CSV file that contains data-fields that you assert must exist for each file/isin etc.(optional)
+FILE_IDS_CSV: Absolute location of csv file containing ids(pdf ids). Make sure the ids are sans quotes.(Used only for Parser testing/validation)
 KEY_FILTER= This string determines what set of fields will be taken into consideration by comparator.REFER GUIDELINES BELOW FOR MORE
 
-2)Run the main function of Main file.
+//Morning Star
+ISIN_CSV: Absolute location of csv file containing ISINs.(For track related testing)
+
+2)Run the main.
 
 
 GUIDELINES FOR KEY_FILTER:
