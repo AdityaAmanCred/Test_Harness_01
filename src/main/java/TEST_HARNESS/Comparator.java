@@ -56,8 +56,8 @@ public class Comparator {
 
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
         rightFlatMap.keySet().forEach(k -> allfields.add(k));
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
-        if (otherDir.equals("EXPECTED_DIR")) {
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        if (otherDir.equals("SECONDARY_DIR")) {
             System.out.println("Comparing responses for file: " + fileName);
             Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
             leftFlatMap.keySet().forEach(k -> allfields.add(k));
@@ -75,30 +75,30 @@ public class Comparator {
     }
 
     public void compareAll() throws IOException, ParseException {
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
-        List<String> commonFileNames = getCommonFileNames(otherDir, "STAGE_DIR");
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        List<String> commonFileNames = getCommonFileNames(otherDir, "PRIMARY_DIR");
         for (String fileName : commonFileNames) {
-            if (otherDir.equals("EXPECTED_DIR")) {
+            if (otherDir.equals("SECONDARY_DIR")) {
                 Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
                 filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             }
-            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
+            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + fileName + ".json"));
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             compare(fileName);
         }
-        if (otherDir.equals("EXPECTED_DIR")) {
+        if (otherDir.equals("SECONDARY_DIR")) {
             generateAggregateMap();
         }
         nullCheck();
     }
 
     public void nullCheck() throws IOException, ParseException {
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "STAGE_DIR" : "EXPECTED_DIR";
-        List<String> commonFileNames = getCommonFileNames(otherDir, "STAGE_DIR");
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        List<String> commonFileNames = getCommonFileNames(otherDir, "PRIMARY_DIR");
         for (String fileName : commonFileNames) {
-            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("STAGE_DIR") + fileName + ".json"));
+            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + fileName + ".json"));
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
-            if (otherDir.equals("EXPECTED_DIR")) {
+            if (otherDir.equals("SECONDARY_DIR")) {
                 Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
                 filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             }

@@ -31,7 +31,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "operations_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "operations_" + isin, ++fetchCounter);
                 Environment env_prod = Environment.PROD;
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
@@ -56,7 +56,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "perfomance_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "perfomance_" + isin, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -80,7 +80,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "ratings_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "ratings_" + isin, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -104,7 +104,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "portfolio_" + isin, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), "portfolio_" + isin, ++fetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }

@@ -22,12 +22,16 @@ public class DownloadFiles {
 
     private static RateLimiter rateLimiter;
 
+    private int downloadcount;
+
     public DownloadFiles(double rate) {
         rateLimiter = RateLimiter.create(rate);
         this.setFileIds();
+        downloadcount = 0;
     }
 
     public void downloadPDFs() throws IOException {
+        downloadcount = 0;
         for (String id : fileIds) {
             try {
                 rateLimiter.acquire(1);
@@ -46,7 +50,10 @@ public class DownloadFiles {
         Request request = new Request.Builder().url("http://scraper.pci.dreamplug.net/scraper/v1/pdf2data/download/pdf").method("POST", body)
                                                .addHeader("Content-Type", "application/x-www-form-urlencoded").build();
         Response response = client.newCall(request).execute();
-        savePDFFile(response.body().bytes(), id);
+        if (response.code() >= 200 && response.code() < 300) {
+            savePDFFile(response.body().bytes(), id);
+        }
+
     }
 
     public void savePDFFile(byte[] bytes, String fileName) {
@@ -56,7 +63,7 @@ public class DownloadFiles {
             OutputStream os = new FileOutputStream(file);
 
             os.write(bytes);
-            System.out.println("Downloaded: " + fileName + ".pdf");
+            System.out.println("Downloaded: " + fileName + ".pdf downloadCount: " + ++this.downloadcount);
             os.close();
         } catch (Exception e) {
             System.out.println("Error in downloading file: " + fileName + " :" + e);

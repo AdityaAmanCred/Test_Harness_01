@@ -18,12 +18,15 @@ public class Bumblebee extends ParserResponses {
     @Override
     public void fetchResponse(String fileName, Environment env) {
         String template_id = "";
+        if (this.getParserType() == ParserType.PRIMARY) {
+            template_id = this.getPrimaryParserTemplateId();
+        } else {
+            template_id = this.getSecondaryParserTemplateId();
+        }
         if (env == Environment.PROD) {
             this.envName = "prod";
-            template_id = prodId;
         } else {
             envName = "stg";
-            template_id = stageId;
         }
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", template_id)
@@ -38,7 +41,7 @@ public class Bumblebee extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, env, ++fetchCounter);
+                saveResponse(response.body().bytes(), fileName, ++fetchCounter);
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
