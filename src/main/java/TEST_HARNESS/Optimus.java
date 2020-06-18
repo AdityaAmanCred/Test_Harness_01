@@ -37,7 +37,7 @@ public class Optimus extends ParserResponses {
 
         Environment otherEnv = (Application.getPrimaryParserName() == ParserName.OPTIMUS) ? Application.getSecondaryParserEnv() : Application
                 .getPrimaryParserEnv();
-        String otherParser = (otherEnv == Environment.PROD) ? fetchProperty("SECONDARY_PARSER_NAME") : fetchProperty("PRIMARY_PARSER_NAME");
+        String otherParser = (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) ? fetchProperty("SECONDARY_PARSER_NAME") : fetchProperty("PRIMARY_PARSER_NAME");
         if (otherParser.equalsIgnoreCase("BUMBLEBEE")) {
             apiUrlSuffix = "transformed_data";
         }

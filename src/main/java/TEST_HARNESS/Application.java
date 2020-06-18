@@ -66,7 +66,7 @@ public class Application {
 
         ////Fetch Responses
         //For fetching all Parser's data(Optimus,Bumblebee, Pandora)
-        //fetchParserResponses();
+        fetchParserResponses();
 
         //For fetching MorningStar data
         //        MorningStar morningStar = new MorningStar(20.0);
