@@ -1,6 +1,7 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
+import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
 import lombok.Setter;
@@ -37,7 +38,8 @@ public class Optimus extends ParserResponses {
 
         Environment otherEnv = (Application.getPrimaryParserName() == ParserName.OPTIMUS) ? Application.getSecondaryParserEnv() : Application
                 .getPrimaryParserEnv();
-        String otherParser = (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) ? fetchProperty("SECONDARY_PARSER_NAME") : fetchProperty("PRIMARY_PARSER_NAME");
+        String otherParser = (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) ? fetchProperty(
+                "SECONDARY_PARSER_NAME") : fetchProperty("PRIMARY_PARSER_NAME");
         if (otherParser.equalsIgnoreCase("BUMBLEBEE")) {
             apiUrlSuffix = "transformed_data";
         }
@@ -67,9 +69,16 @@ public class Optimus extends ParserResponses {
     @Override
     public void fetchAllResponses(Environment env) {
         setFetchCounter(0);
+        if (getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR").size() > 0) {
+            fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
+            this.fetchCounter = fetchedFileNames.size();
+        }
         for (String fileName : fileNames) {
             rateLimiter.acquire(1);
-            this.fetchResponse(fileName + ".pdf", env);
+            if (!this.fetchedFileNames.contains(fileName)) {
+                this.fetchResponse(fileName + ".pdf", env);
+                this.fetchedFileNames.add(fileName);
+            }
         }
     }
 }

@@ -51,9 +51,4 @@ public abstract class Responses {
             System.out.println(fileName + ".pdf: Exception: " + e);
         }
     }
-
-    public enum ParserType {
-        PRIMARY,
-        SECONDARY;
-    }
 }

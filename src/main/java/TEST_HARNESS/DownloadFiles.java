@@ -1,7 +1,9 @@
 package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
+import static TEST_HARNESS.Util.getNames;
 import static TEST_HARNESS.Util.readCSVLineByLine;
+import static TEST_HARNESS.Util.trimDoubleQuotes;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -20,6 +23,8 @@ import okhttp3.Response;
 public class DownloadFiles {
     private List<String> fileIds = new ArrayList<>();
 
+    private List<String> downloadedFiles = new ArrayList<>();
+
     private static RateLimiter rateLimiter;
 
     private int downloadcount;
@@ -28,6 +33,10 @@ public class DownloadFiles {
         rateLimiter = RateLimiter.create(rate);
         this.setFileIds();
         downloadcount = 0;
+        if (getNames("PDF_DOWNLOAD_LOC").size() > 0) {
+            downloadedFiles = getNames("PDF_DOWNLOAD_LOC");
+            downloadcount = downloadedFiles.size();
+        }
     }
 
     public void downloadPDFs() throws IOException {
@@ -35,7 +44,11 @@ public class DownloadFiles {
         for (String id : fileIds) {
             try {
                 rateLimiter.acquire(1);
-                this.downloadPDF(id);
+                if (!this.downloadedFiles.contains(id)) {
+                    this.downloadPDF(id);
+                    this.downloadedFiles.add(id);
+                }
+
             } catch (SocketTimeoutException e) {
                 e.printStackTrace();
             }

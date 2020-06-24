@@ -2,12 +2,15 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getNames;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 
 @Getter
 public abstract class ParserResponses extends Responses {
     protected List<String> fileNames;
+
+    protected List<String> fetchedFileNames = new ArrayList<>();
 
     protected String primaryParserTemplateId;
 

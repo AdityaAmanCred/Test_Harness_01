@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +52,17 @@ public class Pandorastreet extends ParserResponses {
     @Override
     public void fetchAllResponses(Environment env) {
         setFetchCounter(0);
+        if (getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR").size() > 0) {
+            fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
+            this.fetchCounter = fetchedFileNames.size();
+        }
         for (String fileName : fileNames) {
             rateLimiter.acquire(1);
-            this.fetchResponse(fileName + ".pdf", env);
+            if (!this.fetchedFileNames.contains(fileName)) {
+                this.fetchResponse(fileName + ".pdf", env);
+                this.fetchedFileNames.add(fileName);
+            }
+
         }
     }
 }
