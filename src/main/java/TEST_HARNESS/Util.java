@@ -187,8 +187,8 @@ public final class Util {
             Scanner scanner = new Scanner(new File(fileLoc));
             while (scanner.hasNextLine()) {
                 String s = scanner.nextLine();
-                if (s.length() > 0 && !s.trim().equalsIgnoreCase("id")) {
-                    lines.add(s.trim());
+                if (s.length() > 0 && !trimDoubleQuotes(s).equalsIgnoreCase("id")) {
+                    lines.add(trimDoubleQuotes(s));
                 }
             }
             scanner.close();
@@ -218,15 +218,15 @@ public final class Util {
         ParserResponses pandorastreet = new Pandorastreet(50.0);
         ParserResponses optimus = new Optimus(50.0);
         if (Application.getPrimaryParserName() == ParserName.BUMBLEBEE) {
-            bumblebee.setParserType(ParserResponses.ParserType.PRIMARY);
+            bumblebee.setParserType(ParserType.PRIMARY);
             bumblebee.fetchAllResponses(Application.getPrimaryParserEnv());
 
         } else if (Application.getPrimaryParserName() == ParserName.OPTIMUS) {
-            optimus.setParserType(ParserResponses.ParserType.PRIMARY);
+            optimus.setParserType(ParserType.PRIMARY);
             optimus.fetchAllResponses(Application.getPrimaryParserEnv());
 
         } else if (Application.getPrimaryParserName() == ParserName.PANDORASTREET) {
-            pandorastreet.setParserType(ParserResponses.ParserType.PRIMARY);
+            pandorastreet.setParserType(ParserType.PRIMARY);
             pandorastreet.fetchAllResponses(Application.getPrimaryParserEnv());
 
         }
@@ -234,15 +234,15 @@ public final class Util {
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY) {
 
             if (Application.getSecondaryParserName() == ParserName.BUMBLEBEE) {
-                bumblebee.setParserType(ParserResponses.ParserType.SECONDARY);
+                bumblebee.setParserType(ParserType.SECONDARY);
                 bumblebee.fetchAllResponses(Application.getSecondaryParserEnv());
 
             } else if (Application.getSecondaryParserName() == ParserName.PANDORASTREET) {
-                pandorastreet.setParserType(ParserResponses.ParserType.SECONDARY);
+                pandorastreet.setParserType(ParserType.SECONDARY);
                 pandorastreet.fetchAllResponses(Application.getSecondaryParserEnv());
 
             } else if (Application.getSecondaryParserName() == ParserName.OPTIMUS) {
-                optimus.setParserType(ParserResponses.ParserType.SECONDARY);
+                optimus.setParserType(ParserType.SECONDARY);
                 optimus.fetchAllResponses(Application.getSecondaryParserEnv());
 
             }
@@ -278,5 +278,15 @@ public final class Util {
         } else {
             return true;
         }
+    }
+
+    public static String trimDoubleQuotes(String text) {
+        int textLength = text.length();
+
+        if (textLength >= 2 && text.charAt(0) == '"' && text.charAt(textLength - 1) == '"') {
+            return text.substring(1, textLength - 1);
+        }
+
+        return text;
     }
 }

@@ -61,8 +61,8 @@ public class Application {
 
     public static void main(String[] args) throws IOException, ParseException {
         //Download the PDF
-        //        DownloadFiles downloadFiles = new DownloadFiles(10.0);
-        //        downloadFiles.downloadPDFs();
+        DownloadFiles downloadFiles = new DownloadFiles(10.0);
+        downloadFiles.downloadPDFs();
 
         ////Fetch Responses
         //For fetching all Parser's data(Optimus,Bumblebee, Pandora)

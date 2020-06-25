@@ -34,7 +34,9 @@ public class Comparator {
 
     private Map<String, JSONArray> diffKeys = new HashedMap();
 
-    private Map<String, JSONArray> nullfieldMap = new HashedMap();
+    private Map<String, JSONArray> primaryNullFieldMap = new HashedMap();
+
+    private Map<String, JSONArray> secondaryNullFieldMap = new HashedMap();
 
     private Map<String, List<String>> aggregateMap = new HashMap<>();
 
@@ -103,7 +105,8 @@ public class Comparator {
                 filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             }
 
-            updateNullCheckMap(fileName);
+            updateNullCheckMap(fileName, ParserType.PRIMARY);
+            updateNullCheckMap(fileName, ParserType.SECONDARY);
         }
     }
 
@@ -142,18 +145,21 @@ public class Comparator {
         }
     }
 
-    private void updateNullCheckMap(String fileName) {
+    private void updateNullCheckMap(String fileName, ParserType parserType) {
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
         Map<String, Object> leftFlatMap = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? Util.flatten(filteredLeftMap) : null;
+        if (parserType == ParserType.SECONDARY) {
+            Map<String, Object> temp = leftFlatMap;
+            leftFlatMap = rightFlatMap;
+            rightFlatMap = temp;
+        }
         nullCheckFields.forEach(k -> allfields.add(k.trim()));
         for (String k : allfields) {
-            if (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals("") || rightFlatMap.get(k).toString()
-                                                                                                        .equals("null") || rightFlatMap
-                    .containsKey(k) == false) {
+            if (rightFlatMap.containsKey(k) == true && (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals(""))) {
 
                 JSONArray tmpArr;
-                if (nullfieldMap.containsKey(k)) {
-                    tmpArr = nullfieldMap.get(k);
+                if ((parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).containsKey(k)) {
+                    tmpArr = (parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).get(k);
                 } else {
                     tmpArr = new JSONArray();
                 }
@@ -161,11 +167,11 @@ public class Comparator {
                 Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName, "null",
                         removeRedundantDifference(leftFlatMap.get(k))) : new Standalone(fileName, "null");
                 if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
-                        .getExpectedValue())) {//Uncomment if-condition to check null values for stage, even if prod values are null too//
+                        .getExpectedValue())) {//Uncomment if-condition to check null values for primary/secondary parser, even if other parser values are null too//
                     tmpArr.add(obj);
                 }
                 if (tmpArr.size() > 0) {
-                    nullfieldMap.put(k, tmpArr);
+                    (parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).put(k, tmpArr);
                 }
             }
         }
