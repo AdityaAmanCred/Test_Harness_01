@@ -65,6 +65,8 @@ public class DownloadFiles {
         Response response = client.newCall(request).execute();
         if (response.code() >= 200 && response.code() < 300) {
             savePDFFile(response.body().bytes(), id);
+        } else {
+            System.out.println("File " + id + " already downloaded.");
         }
 
     }

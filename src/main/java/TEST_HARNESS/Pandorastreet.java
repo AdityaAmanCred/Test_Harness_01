@@ -61,8 +61,9 @@ public class Pandorastreet extends ParserResponses {
             if (!this.fetchedFileNames.contains(fileName)) {
                 this.fetchResponse(fileName + ".pdf", env);
                 this.fetchedFileNames.add(fileName);
+            } else {
+                System.out.println("Pandorastreet response for file " + fileName + " already fetched");
             }
-
         }
     }
 }
