@@ -47,6 +47,8 @@ public class DownloadFiles {
                 if (!this.downloadedFiles.contains(id)) {
                     this.downloadPDF(id);
                     this.downloadedFiles.add(id);
+                } else {
+                    System.out.println("File " + id + " already downloaded.");
                 }
 
             } catch (SocketTimeoutException e) {
@@ -66,7 +68,7 @@ public class DownloadFiles {
         if (response.code() >= 200 && response.code() < 300) {
             savePDFFile(response.body().bytes(), id);
         } else {
-            System.out.println("File " + id + " already downloaded.");
+            System.out.println("For downloading file: " + id + ", got response code " + response.code());
         }
 
     }
