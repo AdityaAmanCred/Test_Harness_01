@@ -64,15 +64,17 @@ public class GenerateResults {
     public void generate(Comparator comparator) throws JsonProcessingException {
         //ComparisonStats comparisonStats = new ComparisonStats();
         //comparisonStats.GenerateStats();;
-        FieldWiseResults nullCheck = new FieldWiseResults(generateMFResults(comparator.getNullfieldMap()));
-        writeTofile("nullcheck", mapper.writeValueAsString(nullCheck));
+        FieldWiseResults primaryNullCheck = new FieldWiseResults(generateMFResults(comparator.getPrimaryNullFieldMap()));
+        FieldWiseResults secondaryNullCheck = new FieldWiseResults(generateMFResults(comparator.getSecondaryNullFieldMap()));
+        writeTofile("PrimaryParserNullFields", mapper.writeValueAsString(primaryNullCheck));
+        writeTofile("SecondaryParserNullFields", mapper.writeValueAsString(secondaryNullCheck));
         if (Application.getCompareAgainst() != CompareAgainst.STANDALONE) {
             FieldWiseResults fieldWise = new FieldWiseResults(generateFieldWiseResults(comparator.getAggregateMap(), comparator.getDiffKeys()));
             FieldWiseResults leftOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.PROD));
             FieldWiseResults rightOnly = new FieldWiseResults(generateMissingKeyResults(comparator, Environment.STAGE));
-            writeTofile("field_wise", mapper.writeValueAsString(fieldWise));
-            writeTofile("leftOnly", mapper.writeValueAsString(leftOnly));
-            writeTofile("rightOnly", mapper.writeValueAsString(rightOnly));
+            writeTofile("FieldWiseDifferences", mapper.writeValueAsString(fieldWise));
+            writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
+            writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
         System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "PRIMARY_DIR").size());
     }
