@@ -51,18 +51,16 @@ public class Pandorastreet extends ParserResponses {
 
     @Override
     public void fetchAllResponses(Environment env) {
-        setFetchCounter(0);
-        if (getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR").size() > 0) {
-            fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
-            this.fetchCounter = fetchedFileNames.size();
-        }
+        fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
+        this.fetchCounter = fetchedFileNames.size();
+
         for (String fileName : fileNames) {
             rateLimiter.acquire(1);
             if (!this.fetchedFileNames.contains(fileName)) {
                 this.fetchResponse(fileName + ".pdf", env);
                 this.fetchedFileNames.add(fileName);
             } else {
-                System.out.println("Pandorastreet response for file " + fileName + " already fetched");
+                System.out.println(String.format("%s Parser response for file " + fileName + " already fetched", this.getParserType().toString()));
             }
         }
     }

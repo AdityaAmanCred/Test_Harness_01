@@ -40,7 +40,7 @@ public class DownloadFiles {
     }
 
     public void downloadPDFs() throws IOException {
-        downloadcount = 0;
+        downloadcount = downloadedFiles.size();
         for (String id : fileIds) {
             try {
                 rateLimiter.acquire(1);
