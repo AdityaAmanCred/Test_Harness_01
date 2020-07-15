@@ -1,6 +1,5 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.ParserResponses.*;
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.setComparisonParameter;
 import java.io.File;

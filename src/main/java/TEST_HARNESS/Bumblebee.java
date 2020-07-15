@@ -3,7 +3,6 @@ package TEST_HARNESS;
 import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.concurrent.TimeUnit;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -54,18 +53,16 @@ public class Bumblebee extends ParserResponses {
 
     @Override
     public void fetchAllResponses(Environment env) {
-        setFetchCounter(0);
-        if (getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR").size() > 0) {
-            fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
-            this.fetchCounter = fetchedFileNames.size();
-        }
+        fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
+        this.fetchCounter = fetchedFileNames.size();
+
         for (String fileName : fileNames) {
             rateLimiter.acquire(1);
             if (!this.fetchedFileNames.contains(fileName)) {
                 this.fetchResponse(fileName + ".pdf", env);
                 this.fetchedFileNames.add(fileName);
-            }else{
-                System.out.println("Bumbleebee response for file "+ fileName+ " already fetched");
+            } else {
+                System.out.println(String.format("%s Parser response for file " + fileName + " already fetched", this.getParserType().toString()));
             }
         }
     }
