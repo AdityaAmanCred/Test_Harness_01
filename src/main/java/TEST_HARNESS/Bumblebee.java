@@ -29,7 +29,7 @@ public class Bumblebee extends ParserResponses {
         } else {
             envName = "stg";
         }
-        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
+        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", template_id)
                                                       .addFormDataPart("pdf_to_transform", fileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"), new File(pdfLocation + fileName)))

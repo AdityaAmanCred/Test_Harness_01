@@ -60,12 +60,12 @@ public class Application {
     }
 
     public static void main(String[] args) throws IOException, ParseException {
-        //Download the PDF
-        DownloadFiles downloadFiles = new DownloadFiles(10.0);
-        downloadFiles.downloadPDFs();
+        //Downloader the PDF
+        Downloader downloader = new PortkeyDownloader(50.0);
+        downloader.downloadPDFs();
 
-        ////Fetch Responses
-        //For fetching all Parser's data(Optimus,Bumblebee, Pandora)
+        //Fetch Responses
+        // For fetching all Parser's data(Optimus,Bumblebee, Pandora)
         fetchParserResponses();
 
         //For fetching MorningStar data
