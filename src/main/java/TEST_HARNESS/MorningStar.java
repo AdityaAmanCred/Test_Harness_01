@@ -9,7 +9,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MorningStar extends Responses {
-    private List<String> isinList;
+    private List<List<String>> isinList;
 
     public MorningStar(double fetchRate) {
         super(fetchRate);
@@ -115,7 +115,7 @@ public class MorningStar extends Responses {
 
     public void fetchAllOperationsData(Environment env) throws IOException {
         setFetchCounter(0);
-        for (String isin : isinList) {
+        for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchOperationsData(isin, env);
         }
@@ -123,7 +123,7 @@ public class MorningStar extends Responses {
 
     public void fetchAllPerfomanceData(Environment env) throws IOException {
         setFetchCounter(0);
-        for (String isin : isinList) {
+        for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchPerfomanceData(isin, env);
         }
@@ -132,7 +132,7 @@ public class MorningStar extends Responses {
 
     public void fetchAllRatingsData(Environment env) throws IOException {
         setFetchCounter(0);
-        for (String isin : isinList) {
+        for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchRatingsData(isin, env);
         }
@@ -140,7 +140,7 @@ public class MorningStar extends Responses {
 
     public void fetchAllPortfolioData(Environment env) throws IOException {
         setFetchCounter(0);
-        for (String isin : isinList) {
+        for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchPortfolioData(isin, env);
         }

@@ -3,6 +3,7 @@ package TEST_HARNESS;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.google.common.collect.Sets;
+import com.opencsv.CSVReader;
 
 public final class Util {
     private Util() {
@@ -181,22 +183,23 @@ public final class Util {
         }
     }
 
-    public static List<String> readCSVLineByLine(String fileLoc) {
-        List<String> lines = new ArrayList<>();
+    public static List<List<String>> readCSVLineByLine(String fileLoc) {
+        List<List<String>> stringMatrix = new ArrayList<>();
         try {
-            Scanner scanner = new Scanner(new File(fileLoc));
-            while (scanner.hasNextLine()) {
-                String s = scanner.nextLine();
-                if (s.length() > 0 && !trimDoubleQuotes(s).equalsIgnoreCase("id")) {
-                    lines.add(trimDoubleQuotes(s));
-                }
+            CSVReader reader = new CSVReader(new FileReader(fileLoc));
+            String[] nextLine;
+            if ((nextLine = reader.readNext()) != null && !trimDoubleQuotes(nextLine[0]).contains("id")) {
+                stringMatrix.add(Arrays.asList(nextLine).stream().map(s -> trimDoubleQuotes(s)).collect(Collectors.toList()));
             }
-            scanner.close();
+            while ((nextLine = reader.readNext()) != null) {
+                stringMatrix.add(Arrays.asList(nextLine).stream().map(s -> trimDoubleQuotes(s)).collect(Collectors.toList()));
+            }
         } catch (FileNotFoundException e) {
-            System.out.println("File NOT FOUND at" + fileLoc);
-
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return lines;
+        return stringMatrix;
     }
 
     public static Object removeRedundantDifference(Object obj) {
@@ -214,7 +217,7 @@ public final class Util {
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
             System.exit(0);
         }
-        ParserResponses bumblebee = new Bumblebee(50.0);
+        ParserResponses bumblebee = new Bumblebee(5.0);
         ParserResponses pandorastreet = new Pandorastreet(50.0);
         ParserResponses optimus = new Optimus(50.0);
         if (Application.getPrimaryParserName() == ParserName.BUMBLEBEE) {
@@ -282,11 +285,10 @@ public final class Util {
 
     public static String trimDoubleQuotes(String text) {
         int textLength = text.length();
-
         if (textLength >= 2 && text.charAt(0) == '"' && text.charAt(textLength - 1) == '"') {
             return text.substring(1, textLength - 1);
         }
-
         return text;
     }
+
 }

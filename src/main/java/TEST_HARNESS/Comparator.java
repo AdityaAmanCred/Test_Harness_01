@@ -3,7 +3,6 @@ package TEST_HARNESS;
 import static TEST_HARNESS.Util.createJSONMap;
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
-import static TEST_HARNESS.Util.readCSVLineByLine;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.replaceNumbers;
 import static TEST_HARNESS.Util.setComparisonParameter;
@@ -44,13 +43,13 @@ public class Comparator {
 
     private Map<String, JSONArray> keysOnRight = new HashMap<>();
 
-    private Set<String> nullCheckFields;
+    //private Set<String> nullCheckFields;
 
     private Set<String> allfields = new HashSet<>();
 
     public Comparator() {
         keysToCompare = fetchProperty("KEY_FILTER");
-        nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
+        // nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
         setComparisonParameter();
     }
 
@@ -153,7 +152,7 @@ public class Comparator {
             leftFlatMap = rightFlatMap;
             rightFlatMap = temp;
         }
-        nullCheckFields.forEach(k -> allfields.add(k.trim()));
+        //nullCheckFields.forEach(k -> allfields.add(k.trim()));
         for (String k : allfields) {
             if (rightFlatMap.containsKey(k) == true && (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals(""))) {
 
