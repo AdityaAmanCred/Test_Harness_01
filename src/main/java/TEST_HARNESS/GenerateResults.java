@@ -76,7 +76,7 @@ public class GenerateResults {
             writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
             writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
-        System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "PRIMARY_DIR").size());
+        System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "SECONDARY_DIR").size());
     }
 
     public JSONArray generateMFResults(Map<String, JSONArray> mfMap) {

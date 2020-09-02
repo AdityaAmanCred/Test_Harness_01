@@ -217,7 +217,7 @@ public final class Util {
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
             System.exit(0);
         }
-        ParserResponses bumblebee = new Bumblebee(1.0);
+        ParserResponses bumblebee = new Bumblebee(5.0);
         ParserResponses pandorastreet = new Pandorastreet(50.0);
         ParserResponses optimus = new Optimus(50.0);
         if (Application.getPrimaryParserName() == ParserName.BUMBLEBEE) {

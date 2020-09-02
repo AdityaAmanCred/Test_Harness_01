@@ -14,7 +14,7 @@ public class PortkeyDownloader extends Downloader {
 
     public void downloadPdf(String... args) throws IOException {
         OkHttpClient client = new OkHttpClient().newBuilder().build();
-        Request request = new Request.Builder().url("http://portkey.stg.dreamplug.net/etl/v1/source/data/" + args[0] + "?unlock=false")
+        Request request = new Request.Builder().url("http://portkey.prod.dreamplug.net/etl/v1/source/data/" + args[0] + "?unlock=false")
                                                .method("GET", null).addHeader("X-USER-ID", args[1]).build();
         Response response = client.newCall(request).execute();
         if (response.code() >= 200 && response.code() < 300) {
