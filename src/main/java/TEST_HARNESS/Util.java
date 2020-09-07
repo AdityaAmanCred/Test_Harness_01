@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -114,7 +115,7 @@ public final class Util {
     public static Set<String> getFileNamesFromArray(JSONArray jsonArray) {
         Set<String> files = new HashSet<>();
         for (Object obj : jsonArray) {
-            files.add(((Variance) obj).getFileName());
+            files.add(((Standalone) obj).getFileName());
         }
         return files;
     }
@@ -289,6 +290,23 @@ public final class Util {
             return text.substring(1, textLength - 1);
         }
         return text;
+    }
+
+    public static Map<String, List<String>> generateAggregateMap(Map<String, JSONArray> map) {
+        Map<String, List<String>> aggregatedMap = new HashMap<>();
+        for (String key : map.keySet()) {
+            String aggKey = replaceNumbers(key);
+            if (aggregatedMap.containsKey(aggKey)) {
+                List<String> keyList = aggregatedMap.get(aggKey);
+                keyList.add(key);
+                aggregatedMap.put(aggKey, keyList);
+            } else {
+                List<String> keyList = new ArrayList<>();
+                keyList.add(key);
+                aggregatedMap.put(aggKey, keyList);
+            }
+        }
+        return aggregatedMap;
     }
 
 }

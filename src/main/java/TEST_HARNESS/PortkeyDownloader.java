@@ -20,7 +20,7 @@ public class PortkeyDownloader extends Downloader {
         if (response.code() >= 200 && response.code() < 300) {
             savePDFFile(response.body().bytes(), args[0]);
         } else {
-            System.out.println("For downloading file: " + args[0] + ", got response code " + response.code());
+            System.out.println("For downloading object_id: " + args[0] + ", user_id: " + args[1] + ", got response code " + response.code());
         }
     }
 
