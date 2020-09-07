@@ -4,11 +4,9 @@ import static TEST_HARNESS.Util.createJSONMap;
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.removeRedundantDifference;
-import static TEST_HARNESS.Util.replaceNumbers;
 import static TEST_HARNESS.Util.setComparisonParameter;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,19 +35,14 @@ public class Comparator {
 
     private Map<String, JSONArray> secondaryNullFieldMap = new HashedMap();
 
-    private Map<String, List<String>> aggregateMap = new HashMap<>();
-
     private Map<String, JSONArray> keysOnLeft = new HashMap<>();
 
     private Map<String, JSONArray> keysOnRight = new HashMap<>();
-
-    //private Set<String> nullCheckFields;
 
     private Set<String> allfields = new HashSet<>();
 
     public Comparator() {
         keysToCompare = fetchProperty("KEY_FILTER");
-        // nullCheckFields = readCSVLineByLine(fetchProperty("NULLCHECK_FIELDS_CSV")).stream().collect(Collectors.toSet());
         setComparisonParameter();
     }
 
@@ -87,9 +80,6 @@ public class Comparator {
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             compare(fileName);
         }
-        if (otherDir.equals("SECONDARY_DIR")) {
-            generateAggregateMap();
-        }
         nullCheck();
     }
 
@@ -106,21 +96,6 @@ public class Comparator {
 
             updateNullCheckMap(fileName, ParserType.PRIMARY);
             updateNullCheckMap(fileName, ParserType.SECONDARY);
-        }
-    }
-
-    public void generateAggregateMap() {
-        for (String key : diffKeys.keySet()) {
-            String aggKey = replaceNumbers(key);
-            if (aggregateMap.containsKey(aggKey)) {
-                List<String> keyList = aggregateMap.get(aggKey);
-                keyList.add(key);
-                aggregateMap.put(aggKey, keyList);
-            } else {
-                List<String> keyList = new ArrayList<>();
-                keyList.add(key);
-                aggregateMap.put(aggKey, keyList);
-            }
         }
     }
 
@@ -152,7 +127,7 @@ public class Comparator {
             leftFlatMap = rightFlatMap;
             rightFlatMap = temp;
         }
-        //nullCheckFields.forEach(k -> allfields.add(k.trim()));
+
         for (String k : allfields) {
             if (rightFlatMap.containsKey(k) == true && (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals(""))) {
 
