@@ -70,8 +70,8 @@ public final class Util {
         return Sets.intersection(expectedOutputFiles, stageFiles).stream().collect(Collectors.toList());
     }
 
-    public static List<String> getNames(String folderName) {
-        List<String> stringList = new ArrayList<>();
+    public static Set<String> getNames(String folderName) {
+        Set<String> stringList = new HashSet<>();
         File folder = new File(fetchProperty(folderName));
         File[] listOfFiles = folder.listFiles();
         //fileNames = new ArrayList<String>();
@@ -218,7 +218,7 @@ public final class Util {
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
             System.exit(0);
         }
-        ParserResponses bumblebee = new Bumblebee(5.0);
+        ParserResponses bumblebee = new Bumblebee(50.0);
         ParserResponses pandorastreet = new Pandorastreet(50.0);
         ParserResponses optimus = new Optimus(50.0);
         if (Application.getPrimaryParserName() == ParserName.BUMBLEBEE) {
@@ -308,5 +308,4 @@ public final class Util {
         }
         return aggregatedMap;
     }
-
 }

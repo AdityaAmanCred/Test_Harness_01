@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
 
@@ -16,28 +18,33 @@ import lombok.Data;
 abstract class Downloader {
     protected int downloadcount;
 
-    protected List<List<String>> stringMatrix = new ArrayList<>();
+    protected Set<List<String>> csvRows = new HashSet<>();
 
-    protected List<String> downloadedFiles = new ArrayList<>();
+    protected Set<String> downloadedFiles = new HashSet<>();
 
     protected RateLimiter rateLimiter;
+
+    protected int retryAttemptsLeft;
+
+    final protected int maxRetryAttempts = 3;
 
     protected Downloader(double rate) {
         this.setFileIds();
         this.downloadcount = 0;
         this.rateLimiter = RateLimiter.create(rate);
+        this.retryAttemptsLeft = maxRetryAttempts;
         if (getNames("PDF_DOWNLOAD_LOC").size() > 0) {
             this.downloadedFiles = getNames("PDF_DOWNLOAD_LOC");
             this.downloadcount = downloadedFiles.size();
         }
     }
 
-    abstract void downloadPdf(String... args) throws IOException;
+    abstract boolean downloadPdf(String... args) throws IOException;
 
     abstract void downloadPDFs();
 
     public void setFileIds() {
-        stringMatrix = readCSVLineByLine(fetchProperty("FILE_IDS_CSV"));
+        csvRows = readCSVLineByLine(fetchProperty("FILE_IDS_CSV")).stream().collect(Collectors.toSet());
     }
 
     public void savePDFFile(byte[] bytes, String fileName) {
@@ -51,4 +58,5 @@ abstract class Downloader {
             System.out.println("Error in downloading file: " + fileName + " :" + e);
         }
     }
+
 }
