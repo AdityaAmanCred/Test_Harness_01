@@ -14,10 +14,11 @@ import okhttp3.Response;
 public class Pandorastreet extends ParserResponses {
     public Pandorastreet(double fetchRate) {
         super(fetchRate);
+        this.parserName = ParserName.PANDORASTREET;
     }
 
     @Override
-    public void fetchResponse(String fileName, Environment env) {
+    public boolean fetchResponse(String fileName, Environment env) {
         String feed_id = "";
         if (this.getParserType() == ParserType.PRIMARY) {
             feed_id = this.getPrimaryParserTemplateId();
@@ -41,27 +42,13 @@ public class Pandorastreet extends ParserResponses {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
                 saveResponse(response.body().bytes(), fileName, ++fetchCounter);
+                return true;
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void fetchAllResponses(Environment env) {
-        fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
-        this.fetchCounter = fetchedFileNames.size();
-
-        for (String fileName : fileNames) {
-            rateLimiter.acquire(1);
-            if (!this.fetchedFileNames.contains(fileName)) {
-                this.fetchResponse(fileName + ".pdf", env);
-                this.fetchedFileNames.add(fileName);
-            } else {
-                System.out.println(String.format("%s Parser response for file " + fileName + " already fetched", this.getParserType().toString()));
-            }
-        }
+        return false;
     }
 }
