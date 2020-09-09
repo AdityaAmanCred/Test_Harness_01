@@ -16,6 +16,10 @@ public abstract class Responses {
 
     protected int fetchCounter;
 
+    protected int retryAttemptsLeft;
+
+    final protected int maxretryAttempts = 3;
+
     @Getter
     @Setter
     protected static ParserType parserType;
@@ -23,6 +27,7 @@ public abstract class Responses {
     public Responses(double fetchRate) {
         this.rateLimiter = RateLimiter.create(fetchRate);
         this.fetchCounter = 0;
+        this.retryAttemptsLeft = maxretryAttempts;
         setComparisonParameter();
     }
 

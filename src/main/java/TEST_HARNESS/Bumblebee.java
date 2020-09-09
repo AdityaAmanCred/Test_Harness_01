@@ -3,6 +3,7 @@ package TEST_HARNESS;
 import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -14,10 +15,11 @@ import okhttp3.Response;
 public class Bumblebee extends ParserResponses {
     public Bumblebee(double fetchRate) {
         super(fetchRate);
+        this.parserName = ParserName.BUMBLEBEE;
     }
 
     @Override
-    public void fetchResponse(String fileName, Environment env) {
+    public boolean fetchResponse(String fileName, Environment env) {
         String template_id = "";
         if (this.getParserType() == ParserType.PRIMARY) {
             template_id = this.getPrimaryParserTemplateId();
@@ -29,7 +31,7 @@ public class Bumblebee extends ParserResponses {
         } else {
             envName = "stg";
         }
-        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60000, TimeUnit.MILLISECONDS).build();
+        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", template_id)
                                                       .addFormDataPart("pdf_to_transform", fileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"), new File(pdfLocation + fileName)))
@@ -43,28 +45,13 @@ public class Bumblebee extends ParserResponses {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
                 saveResponse(response.body().bytes(), fileName, ++fetchCounter);
+                return true;
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
-
-    @Override
-    public void fetchAllResponses(Environment env) {
-        fetchedFileNames = getNames(this.getParserType().toString().equalsIgnoreCase("PRIMARY") ? "PRIMARY_DIR" : "SECONDARY_DIR");
-        this.fetchCounter = fetchedFileNames.size();
-
-        for (String fileName : fileNames) {
-            rateLimiter.acquire(1);
-            if (!this.fetchedFileNames.contains(fileName)) {
-                this.fetchResponse(fileName + ".pdf", env);
-                this.fetchedFileNames.add(fileName);
-            } else {
-                System.out.println(String.format("%s Parser response for file " + fileName + " already fetched", this.getParserType().toString()));
-            }
-        }
-    }
-
 }
