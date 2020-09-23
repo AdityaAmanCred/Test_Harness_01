@@ -62,7 +62,7 @@ public class Application {
     public static void main(String[] args) throws IOException, ParseException {
         //Downloader the PDF
         Downloader downloader = new PortkeyDownloader(50.0);
-        downloader.downloadPDFs();
+        //downloader.downloadPDFs();
 
         //Fetch Responses
         // For fetching all Parser's data(Optimus,Bumblebee, Pandora)

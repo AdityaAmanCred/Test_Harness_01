@@ -213,7 +213,7 @@ public final class Util {
         }
     }
 
-    public static void fetchParserResponses() {
+    public static void fetchParserResponses() throws IOException, ParseException {
         setParsingParameters();
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
             System.exit(0);
