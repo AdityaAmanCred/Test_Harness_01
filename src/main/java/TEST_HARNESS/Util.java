@@ -308,4 +308,19 @@ public final class Util {
         }
         return aggregatedMap;
     }
+
+    public static Object readJsonFile(String fileLocation) throws IOException, ParseException {
+        return new JSONParser().parse(new FileReader(fileLocation));
+    }
+
+    public static JSONObject getIssuerDetails(JSONObject jsonObject, String issuer) {
+        JSONArray issuers = (JSONArray) jsonObject.get("issuers");
+        for (Object issuerJson : issuers) {
+            if (((JSONObject) issuerJson).get("issuer_name").toString().replaceAll("\\s+", "").toLowerCase()
+                                         .equals(issuer.replaceAll("\\s+", "").toLowerCase())) {
+                return (JSONObject) issuerJson;
+            }
+        }
+        return null;
+    }
 }

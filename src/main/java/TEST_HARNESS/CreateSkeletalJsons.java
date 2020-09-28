@@ -2,7 +2,7 @@ package TEST_HARNESS;
 
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getNames;
-import java.io.FileReader;
+import static TEST_HARNESS.Util.readJsonFile;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public class CreateSkeletalJsons {
     public void createJsonFiles() {
         for (String fileName : getNames("StageResponses")) {
             try {
-                Object obj = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + fileName + ".json"));
+                Object obj = readJsonFile(fetchProperty("PRIMARY_DIR") + fileName + ".json");
 
                 JSONObject nullified = nullifyFields((JSONObject) obj);
                 writeJsonFile(fileName, nullified);

@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.json.simple.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,7 +75,10 @@ public class GenerateResults {
     }
 
     public void generate(Comparator comparator) throws JsonProcessingException {
-        if (Application.getCompareAgainst() == CompareAgainst.STANDALONE) {
+        FieldWiseResults primaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getPrimaryNullFieldMap()));
+        writeTofile("PrimaryParserNullFields", mapper.writeValueAsString(primaryNullCheck));
+        if (fetchProperty("SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED").toLowerCase().contains("false") || Application
+                .getCompareAgainst() == CompareAgainst.STANDALONE) {
             long failureCount = comparator.getStandaloneMap().entrySet().stream().filter(stringIntegerEntry -> stringIntegerEntry.getValue() != 200)
                                           .count();
             Double failurePercentage = Double.valueOf(failureCount * 1.0 / comparator.getStandaloneMap().size()) * 100;
@@ -89,21 +91,18 @@ public class GenerateResults {
             }
             StandaloneResults standaloneResults = new StandaloneResults(failurePercentage, jsonArray);
             writeTofile("StandAloneAnalysis", mapper.writeValueAsString(standaloneResults));
-            return;
         }
-        FieldWiseResults primaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getPrimaryNullFieldMap()));
-        writeTofile("PrimaryParserNullFields", mapper.writeValueAsString(primaryNullCheck));
-        FieldWiseResults secondaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getSecondaryNullFieldMap()));
-        writeTofile("SecondaryParserNullFields", mapper.writeValueAsString(secondaryNullCheck));
+
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY) {
+            FieldWiseResults secondaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getSecondaryNullFieldMap()));
             FieldWiseResults fieldWise = new FieldWiseResults(generateFieldWiseDifferencesResults(comparator.getDiffKeys()));
             FieldWiseResults leftOnly = new FieldWiseResults(generateExclusiveFieldsResults(comparator, ParserType.SECONDARY));
             FieldWiseResults rightOnly = new FieldWiseResults(generateExclusiveFieldsResults(comparator, ParserType.PRIMARY));
+            writeTofile("SecondaryParserNullFields", mapper.writeValueAsString(secondaryNullCheck));
             writeTofile("FieldWiseDifferences", mapper.writeValueAsString(fieldWise));
             writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
             writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
-
         System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "SECONDARY_DIR").size());
     }
 

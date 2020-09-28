@@ -3,12 +3,11 @@ package TEST_HARNESS;
 import static TEST_HARNESS.Util.createJSONMap;
 import static TEST_HARNESS.Util.fetchProperty;
 import static TEST_HARNESS.Util.getCommonFileNames;
+import static TEST_HARNESS.Util.getIssuerDetails;
+import static TEST_HARNESS.Util.readJsonFile;
 import static TEST_HARNESS.Util.removeRedundantDifference;
 import static TEST_HARNESS.Util.setComparisonParameter;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.map.HashedMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
@@ -56,7 +54,7 @@ public class Comparator {
 
         Map<String, Object> rightFlatMap = Util.flatten(filteredRightMap);
         rightFlatMap.keySet().forEach(k -> allfields.add(k));
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR";
         if (otherDir.equals("SECONDARY_DIR")) {
             System.out.println("Comparing responses for file: " + fileName);
             Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
@@ -71,22 +69,21 @@ public class Comparator {
 
             updateDiffKeys(diff, fileName);
         }
-
     }
 
     public void compareAll() throws IOException, ParseException {
-        if (Application.getCompareAgainst() == CompareAgainst.STANDALONE) {
+        if (fetchProperty("SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED").toLowerCase().contains("false") || Application
+                .getCompareAgainst() == CompareAgainst.STANDALONE) {
             standaloneAnalysis();
-            return;
         }
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.MANUAL ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR";
         List<String> commonFileNames = getCommonFileNames(otherDir, "PRIMARY_DIR");
         for (String fileName : commonFileNames) {
             if (otherDir.equals("SECONDARY_DIR")) {
-                Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
+                Object l_obj = readJsonFile(fetchProperty(otherDir) + fileName + ".json");
                 filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             }
-            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + fileName + ".json"));
+            Object r_obj = readJsonFile(fetchProperty("PRIMARY_DIR") + fileName + ".json");
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             compare(fileName);
         }
@@ -97,7 +94,8 @@ public class Comparator {
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> FileNames = getCommonFileNames("PRIMARY_DIR", "PRIMARY_DIR");
         for (String filename : FileNames) {
-            Object parserResponse = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + filename + ".json"));
+            System.out.println("Performing Standalone analysis for file: " + filename);
+            Object parserResponse = readJsonFile(fetchProperty("PRIMARY_DIR") + filename + ".json");
             SSPOJO requestBody = generateRequestBody(parserResponse);
             Integer statusCode = StandaloneMode.generateStatement(objectMapper.writeValueAsString(requestBody));
             standaloneMap.put(filename, statusCode);
@@ -105,36 +103,40 @@ public class Comparator {
 
     }
 
-    public SSPOJO generateRequestBody(Object parserResponse) {
+    public SSPOJO generateRequestBody(Object parserResponse) throws IOException, ParseException {
         preprocess((JSONObject) ((JSONObject) parserResponse).get("transformed_data"));
         SSPOJO reqBody = new SSPOJO("002ed4e7-5f13-4a17-adaa-0c413d28f9d1", "CREDIT_CARD_STATEMENT",
                 (JSONObject) ((JSONObject) parserResponse).get("transformed_data"));
         return reqBody;
     }
 
-    public void preprocess(JSONObject requestBody) {
+    public void preprocess(JSONObject requestBody) throws IOException, ParseException {
+        JSONObject standaloneAnalysisJsonObject = (JSONObject) readJsonFile("StandaloneAnalysisResource.json");
+        JSONObject issuerJson = getIssuerDetails(standaloneAnalysisJsonObject, fetchProperty("ISSUER"));
         JSONObject cardDetails = (JSONObject) requestBody.get("card_details");
         if (cardDetails.get("card_number") == null) {
-            cardDetails.put("card_number", "XXXX-XXXX-XXXX-094");
+            cardDetails.put("card_number", issuerJson.get("card_number"));
         }
-        cardDetails.put("instrument_id", "d80e3416-9d0e-44d1-93b2-8bfa82657b63");
+        cardDetails.put("instrument_id", issuerJson.get("instrument_id"));
         JSONObject userDetails = (JSONObject) requestBody.get("user_details");
-        userDetails.put("user_id", "8671c7fb-2245-4b37-9418-6a624e2050ce");
+        userDetails.put("user_id", standaloneAnalysisJsonObject.get("user_id"));
     }
 
     public void nullCheck() throws IOException, ParseException {
-        String otherDir = Application.getCompareAgainst() == CompareAgainst.STANDALONE ? "PRIMARY_DIR" : "SECONDARY_DIR";
+        String otherDir = Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR";
         List<String> commonFileNames = getCommonFileNames(otherDir, "PRIMARY_DIR");
         for (String fileName : commonFileNames) {
-            Object r_obj = new JSONParser().parse(new FileReader(fetchProperty("PRIMARY_DIR") + fileName + ".json"));
+            Object r_obj = readJsonFile(fetchProperty("PRIMARY_DIR") + fileName + ".json");
             filteredRightMap = createJSONMap(r_obj, keysToCompare);
             if (otherDir.equals("SECONDARY_DIR")) {
-                Object l_obj = new JSONParser().parse(new FileReader(fetchProperty(otherDir) + fileName + ".json"));
+                Object l_obj = readJsonFile(fetchProperty(otherDir) + fileName + ".json");
                 filteredLeftMap = createJSONMap(l_obj, keysToCompare);
             }
 
             updateNullCheckMap(fileName, ParserType.PRIMARY);
-            updateNullCheckMap(fileName, ParserType.SECONDARY);
+            if (Application.getCompareAgainst() == CompareAgainst.SECONDARY) {
+                updateNullCheckMap(fileName, ParserType.SECONDARY);
+            }
         }
     }
 
@@ -169,19 +171,18 @@ public class Comparator {
 
         for (String k : allfields) {
             if (rightFlatMap.containsKey(k) == true && (rightFlatMap.get(k) == null || rightFlatMap.get(k).toString().equals(""))) {
-
                 JSONArray tmpArr;
                 if ((parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).containsKey(k)) {
                     tmpArr = (parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).get(k);
                 } else {
                     tmpArr = new JSONArray();
                 }
-
-                Standalone obj = (Application.getCompareAgainst() != CompareAgainst.STANDALONE) ? new Variance(fileName, "null",
+                Standalone obj = (Application.getCompareAgainst() == CompareAgainst.SECONDARY) ? new Variance(fileName, "null",
                         removeRedundantDifference(leftFlatMap.get(k))) : new Standalone(fileName, "null");
-                // if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj).getExpectedValue())) {//Uncomment if-condition to check null values for primary/secondary parser, even if other parser values are null too//
-                tmpArr.add(obj);
-                //}
+                if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
+                        .getExpectedValue()) || obj instanceof Standalone) {//Uncomment if-condition to check null values for primary/secondary parser, even if other parser values are null too//
+                    tmpArr.add(obj);
+                }
                 if (tmpArr.size() > 0) {
                     (parserType == ParserType.PRIMARY ? primaryNullFieldMap : secondaryNullFieldMap).put(k, tmpArr);
                 }
