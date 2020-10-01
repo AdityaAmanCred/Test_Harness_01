@@ -1,0 +1,8 @@
+package TEST_HARNESS;
+
+public enum TemplateFAILURETYPE {
+    NULLValue,
+    OVERALL,
+    DEBIT_TRANSACTIONS,
+    CREDIT_TRANSACTIONS;
+}

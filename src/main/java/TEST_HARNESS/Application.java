@@ -61,7 +61,7 @@ public class Application {
 
     public static void main(String[] args) throws IOException, ParseException {
         //Downloader the PDF
-        Downloader downloader = new PortkeyDownloader(50.0);
+        Downloader downloader = new PortkeyDownloader(0.5);
         downloader.downloadPDFs();
 
         //Fetch Responses

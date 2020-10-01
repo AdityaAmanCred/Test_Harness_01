@@ -45,6 +45,8 @@ public class Comparator {
 
     private Map<String, Integer> standaloneMap = new HashMap<>();
 
+    private TemplateValidation templateValidation = new TemplateValidation();
+
     public Comparator() {
         keysToCompare = fetchProperty("KEY_FILTER");
         setComparisonParameter();
@@ -76,6 +78,10 @@ public class Comparator {
                 .getCompareAgainst() == CompareAgainst.STANDALONE) {
             standaloneAnalysis();
         }
+
+        if (fetchProperty("ISSUER").toLowerCase().contains("rbl")) {
+            templateValidation.validateAll();
+        }
         String otherDir = Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR";
         List<String> commonFileNames = getCommonFileNames(otherDir, "PRIMARY_DIR");
         for (String fileName : commonFileNames) {
@@ -92,21 +98,22 @@ public class Comparator {
 
     public void standaloneAnalysis() throws IOException, ParseException {
         ObjectMapper objectMapper = new ObjectMapper();
-        List<String> FileNames = getCommonFileNames("PRIMARY_DIR", "PRIMARY_DIR");
+        List<String> FileNames = getCommonFileNames(Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR",
+                "PRIMARY_DIR");
         for (String filename : FileNames) {
             System.out.println("Performing Standalone analysis for file: " + filename);
             Object parserResponse = readJsonFile(fetchProperty("PRIMARY_DIR") + filename + ".json");
-            SSPOJO requestBody = generateRequestBody(parserResponse);
+            SSPOJO requestBody = generateSSPojoRequestBody(parserResponse);
             Integer statusCode = StandaloneMode.generateStatement(objectMapper.writeValueAsString(requestBody));
             standaloneMap.put(filename, statusCode);
         }
 
     }
 
-    public SSPOJO generateRequestBody(Object parserResponse) throws IOException, ParseException {
-        preprocess((JSONObject) ((JSONObject) parserResponse).get("transformed_data"));
+    public SSPOJO generateSSPojoRequestBody(Object parserResponse) throws IOException, ParseException {
+        preprocess((JSONObject) ((JSONObject) parserResponse).get(Util.getMainJsonFieldName()));
         SSPOJO reqBody = new SSPOJO("002ed4e7-5f13-4a17-adaa-0c413d28f9d1", "CREDIT_CARD_STATEMENT",
-                (JSONObject) ((JSONObject) parserResponse).get("transformed_data"));
+                (JSONObject) ((JSONObject) parserResponse).get(Util.getMainJsonFieldName()));
         return reqBody;
     }
 
