@@ -5,15 +5,21 @@ import static TEST_HARNESS.Util.generateAggregateMap;
 import static TEST_HARNESS.Util.getCommonFileNames;
 import static TEST_HARNESS.Util.getFileNamesFromArray;
 import static TEST_HARNESS.Util.percentage;
+import static java.util.stream.Collectors.toCollection;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.simple.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
 
 public class GenerateResults {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -75,21 +81,41 @@ public class GenerateResults {
     }
 
     public void generate(Comparator comparator) throws JsonProcessingException {
-        //ComparisonStats comparisonStats = new ComparisonStats();
-        //comparisonStats.GenerateStats();;
         FieldWiseResults primaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getPrimaryNullFieldMap()));
-        FieldWiseResults secondaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getSecondaryNullFieldMap()));
         writeTofile("PrimaryParserNullFields", mapper.writeValueAsString(primaryNullCheck));
-        writeTofile("SecondaryParserNullFields", mapper.writeValueAsString(secondaryNullCheck));
-        if (Application.getCompareAgainst() != CompareAgainst.STANDALONE) {
+        if (fetchProperty("SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED").toLowerCase().contains("false") || Application
+                .getCompareAgainst() == CompareAgainst.STANDALONE) {
+            long failureCount = comparator.getStandaloneMap().entrySet().stream().filter(stringIntegerEntry -> stringIntegerEntry.getValue() != 200)
+                                          .count();
+            Double failurePercentage = Double.valueOf(failureCount * 1.0 / comparator.getStandaloneMap().size()) * 100;
+            JSONArray jsonArray = new JSONArray();
+            for (String filename : comparator.getStandaloneMap().keySet()) {
+                Integer statusCode = comparator.getStandaloneMap().get(filename);
+                if (statusCode != 200) {
+                    jsonArray.add(new StandaloneResult(filename, statusCode));
+                }
+            }
+            StandaloneResults standaloneResults = new StandaloneResults(failurePercentage, jsonArray);
+            writeTofile("StandAloneAnalysis", mapper.writeValueAsString(standaloneResults));
+        }
+        if (fetchProperty("ISSUER").toLowerCase().contains("rbl")) {
+            FieldWiseResults templateValidationFailureResults = new FieldWiseResults(
+                    generateTemplateValidationResults(comparator.getTemplateValidation().getValidationMap()));
+            writeTofile("TemplateValidationResults", mapper.writeValueAsString(templateValidationFailureResults));
+        }
+        if (Application.getCompareAgainst() == CompareAgainst.SECONDARY) {
+            FieldWiseResults secondaryNullCheck = new FieldWiseResults(generateNullFieldsResults(comparator.getSecondaryNullFieldMap()));
             FieldWiseResults fieldWise = new FieldWiseResults(generateFieldWiseDifferencesResults(comparator.getDiffKeys()));
             FieldWiseResults leftOnly = new FieldWiseResults(generateExclusiveFieldsResults(comparator, ParserType.SECONDARY));
             FieldWiseResults rightOnly = new FieldWiseResults(generateExclusiveFieldsResults(comparator, ParserType.PRIMARY));
+            writeTofile("SecondaryParserNullFields", mapper.writeValueAsString(secondaryNullCheck));
             writeTofile("FieldWiseDifferences", mapper.writeValueAsString(fieldWise));
             writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
             writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
-        System.out.printf("Results generated for %d files\n", getCommonFileNames("PRIMARY_DIR", "SECONDARY_DIR").size());
+        System.out.printf("Results generated for %d files\n",
+                getCommonFileNames(Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR")
+                        .size());
     }
 
     public JSONArray generateNullFieldsResults(Map<String, JSONArray> map) {
@@ -104,10 +130,31 @@ public class GenerateResults {
                 varianceArr.addAll(tmpVarArr);
                 fileSet.addAll(getFileNamesFromArray(tmpVarArr));
             }
-            Double varPercentage = percentage(fileSet.size(), getCommonFileNames("SECONDARY_DIR", "PRIMARY_DIR").size());
+            Double varPercentage = percentage(fileSet.size(),
+                    getCommonFileNames(Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR")
+                            .size());
             NullCheck fieldResult = new NullCheck(aggKey, varPercentage, varianceArr);
             jsonArray.add(fieldResult);
         }
         return jsonArray;
+    }
+
+    public JSONArray generateTemplateValidationResults(Map<TemplateFAILURETYPE, ArrayList<Pair<String, Double>>> validationMap) {
+        JSONArray results = new JSONArray();
+        for (TemplateFAILURETYPE templateFAILURETYPE : validationMap.keySet()) {
+            ArrayList<Pair<String, Double>> arrayList = validationMap.get(templateFAILURETYPE);
+            Set<String> failedFileNames = new HashSet<>();
+            JSONArray validationFailures = new JSONArray();
+            for (Pair<String, Double> p : arrayList) {
+                failedFileNames.add(p.getKey());
+                validationFailures.add(new ValidationFailure(p.getKey(), p.getValue()));
+            }
+
+            results.add(new ValidationFailureResults(percentage(failedFileNames.size(),
+                    getCommonFileNames(Application.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR")
+                            .size()), templateFAILURETYPE.toString(), validationFailures));
+
+        }
+        return results;
     }
 }

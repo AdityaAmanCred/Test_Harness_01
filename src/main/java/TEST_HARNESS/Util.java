@@ -32,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.opencsv.CSVReader;
 
 public final class Util {
@@ -213,7 +215,7 @@ public final class Util {
         }
     }
 
-    public static void fetchParserResponses() {
+    public static void fetchParserResponses() throws IOException, ParseException {
         setParsingParameters();
         if (Application.getCompareAgainst() == CompareAgainst.SECONDARY && isValidateParserSelection() == false) {
             System.exit(0);
@@ -308,4 +310,32 @@ public final class Util {
         }
         return aggregatedMap;
     }
+
+    public static Object readJsonFile(String fileLocation) throws IOException, ParseException {
+        return new JSONParser().parse(new FileReader(fileLocation));
+    }
+
+    public static JsonElement readGsonFile(String fileLocation) throws IOException, ParseException {
+        return new JsonParser().parse(new FileReader(fileLocation));
+    }
+
+    public static JSONObject getIssuerDetails(JSONObject jsonObject, String issuer) {
+        JSONArray issuers = (JSONArray) jsonObject.get("issuers");
+        for (Object issuerJson : issuers) {
+            if (((JSONObject) issuerJson).get("issuer_name").toString().replaceAll("\\s+", "").toLowerCase()
+                                         .equals(issuer.replaceAll("\\s+", "").toLowerCase())) {
+                return (JSONObject) issuerJson;
+            }
+        }
+        return null;
+    }
+
+    public static String getMainJsonFieldName() {
+        if (Application.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || Application.getPrimaryParserName().equals(ParserName.OPTIMUS)) {
+            return "transformed_data";
+        } else {
+            return "json_object";
+        }
+    }
+
 }

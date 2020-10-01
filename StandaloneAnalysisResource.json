@@ -1,0 +1,59 @@
+{ "user_id":"8671c7fb-2245-4b37-9418-6a624e2050ce",
+  "issuers":[
+    {
+      "issuer_name":"Citi Bank",
+      "instrument_id":"d80e3416-9d0e-44d1-93b2-8bfa82657b63",
+      "card_number":"XXXX-XXXX-XXXX-0945"
+    },
+    {
+      "issuer_name":"HDFC Bank",
+      "instrument_id":"61532632-0e9a-4aa0-a0d4-bfa037ef2ec4",
+      "card_number":"4577-XXXX-XXXX-8877"
+    },
+    {
+      "issuer_name":"SBI",
+      "instrument_id":"1ca4c518-1fa4-452a-aecb-12d6646afa7c",
+      "card_number":"XXXX-XXXX-XXXX-XX48"
+    },
+    {
+      "issuer_name":"ICICI Bank",
+      "instrument_id":"1fc0171c-65d4-45e3-8cc2-f100ebf4f63f",
+      "card_number":"4315-XXXX-XXXX-5007"
+    },
+    {
+      "issuer_name":"Kotak Mahindra Bank",
+      "instrument_id":"176b5089-492c-429a-9e50-f6be6aa3f7b7",
+      "card_number":"XXXX-XXXX-XXXX-5761"
+    },
+    {
+      "issuer_name":"YES Bank",
+      "instrument_id":"57edadb6-f634-4574-a403-395d81be140a",
+      "card_number":"5363-XXXX-XXXX-6646"
+    },
+    {
+      "issuer_name":"IndusInd Bank",
+      "instrument_id":"49283489-7bb0-47db-99f0-1530ad73b151",
+      "card_number":"4141-XXXX-XXXX-4156"
+    },
+    {
+      "issuer_name":"Standard Chartered Bank",
+      "instrument_id":"a5da32dc-b63f-4c67-b9bd-d74983310999",
+      "card_number":"XXXX-XXXX-XXXX-0461"
+    },
+    {
+      "issuer_name":"Axis Bank",
+      "instrument_id":"93170a3e-7ff6-44d9-8c77-ae41cca8c246",
+      "card_number":"4308-XXXX-XXXX-7342"
+    },
+    {
+      "issuer_name":"RBL Bank",
+      "instrument_id":"cdf1c408-9afb-4c34-8c5e-586d08705bdf",
+      "card_number":"5243-XXXX-XXXX-1295"
+    },
+    {
+      "issuer_name":"HSBC Bank",
+      "instrument_id":"da60d13a-9176-4814-bb30-59c49204a490",
+      "card_number":"48XX-XXXX-XXXX-5719"
+    }
+  ]
+}
