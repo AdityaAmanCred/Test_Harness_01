@@ -27,7 +27,7 @@ public class TemplateValidation {
             System.out.println("Performing Template Validation for file: " + filename);
             JsonObject parserResponse = readGsonFile(fetchProperty("PRIMARY_DIR") + filename + ".json").getAsJsonObject();
             RBLPojo rblPojo = generateRBLPojoObject(parserResponse, filename);
-            if (!rblPojoNullcheck(rblPojo)) {
+            if (isRblPojoObjNULL(rblPojo)) {
                 ArrayList<Pair<String, Double>> temp;
                 if (validationMap.containsKey(TemplateFAILURETYPE.NULLValue)) {
                     temp = validationMap.get(TemplateFAILURETYPE.NULLValue);
@@ -37,70 +37,28 @@ public class TemplateValidation {
                 temp.add(new ImmutablePair<>(filename, null));
                 validationMap.put(TemplateFAILURETYPE.NULLValue, temp);
             } else {
-                validateOverall(rblPojo);
-                if (rblPojo.getDomestic_transactions() != null) {
-                    validateDebits(rblPojo);
-                    validateCredits(rblPojo);
-                }
+                validateEquationHolds(rblPojo);
             }
         }
     }
 
-    public void validateOverall(RBLPojo rblPojo) {
-        Double diff = rblPojo.getTotal_amount_due() - (rblPojo.getPrevious_balance() - rblPojo.getLast_payment_received()) - rblPojo.getNew_debits();
-        if (Math.abs(diff) > 5.0) {
-            ArrayList<Pair<String, Double>> temp;
-            if (validationMap.containsKey(TemplateFAILURETYPE.OVERALL)) {
-                temp = validationMap.get(TemplateFAILURETYPE.OVERALL);
-            } else {
-                temp = new ArrayList<>();
-            }
-            temp.add(new ImmutablePair<>(rblPojo.getFileName(), diff));
-            validationMap.put(TemplateFAILURETYPE.OVERALL, temp);
-        }
-    }
-
-    public void validateDebits(RBLPojo rblPojo) {
-        Double debits = 0.0;
+    public void validateEquationHolds(RBLPojo rblPojo) {
+        Double transactionsSummation = 0.0;
         JsonArray domesticTransactions = rblPojo.getDomestic_transactions();
         for (JsonElement t : domesticTransactions) {
             Double tA = t.getAsJsonObject().get("txn_amount").getAsDouble();
-            if (tA > 0) {
-                debits += tA;
-            }
+            transactionsSummation += tA;
         }
-        Double diff = rblPojo.getNew_debits() - debits;
+        Double diff = rblPojo.getTotal_amount_due() - (rblPojo.getPrevious_balance() + transactionsSummation);
         if (Math.abs(diff) > 5.0) {
             ArrayList<Pair<String, Double>> temp;
-            if (validationMap.containsKey(TemplateFAILURETYPE.DEBIT_TRANSACTIONS)) {
-                temp = validationMap.get(TemplateFAILURETYPE.DEBIT_TRANSACTIONS);
+            if (validationMap.containsKey(TemplateFAILURETYPE.EquationDoesNotHold)) {
+                temp = validationMap.get(TemplateFAILURETYPE.EquationDoesNotHold);
             } else {
                 temp = new ArrayList<>();
             }
             temp.add(new ImmutablePair<>(rblPojo.getFileName(), diff));
-            validationMap.put(TemplateFAILURETYPE.DEBIT_TRANSACTIONS, temp);
-        }
-    }
-
-    public void validateCredits(RBLPojo rblPojo) {
-        Double credits = 0.0;
-        JsonArray domesticTransactions = rblPojo.getDomestic_transactions();
-        for (JsonElement t : domesticTransactions) {
-            Double tA = t.getAsJsonObject().get("txn_amount").getAsDouble();
-            if (tA < 0) {
-                credits += Math.abs(tA);
-            }
-        }
-        Double diff = rblPojo.getLast_payment_received() - credits;
-        if (Math.abs(diff) > 5.0) {
-            ArrayList<Pair<String, Double>> temp;
-            if (validationMap.containsKey(TemplateFAILURETYPE.CREDIT_TRANSACTIONS)) {
-                temp = validationMap.get(TemplateFAILURETYPE.CREDIT_TRANSACTIONS);
-            } else {
-                temp = new ArrayList<>();
-            }
-            temp.add(new ImmutablePair<>(rblPojo.getFileName(), diff));
-            validationMap.put(TemplateFAILURETYPE.CREDIT_TRANSACTIONS, temp);
+            validationMap.put(TemplateFAILURETYPE.EquationDoesNotHold, temp);
         }
     }
 
@@ -125,12 +83,11 @@ public class TemplateValidation {
         return new RBLPojo(fileName, total_amt_due, new_debits, previous_balance, last_payment_received, domestic_transactions);
     }
 
-    private boolean rblPojoNullcheck(RBLPojo rblPojoObj) {
-        if (rblPojoObj.getTotal_amount_due() == null || rblPojoObj.getLast_payment_received() == null || rblPojoObj
-                .getNew_debits() == null || rblPojoObj.getPrevious_balance() == null) {
-            return false;
-        } else {
+    private boolean isRblPojoObjNULL(RBLPojo rblPojoObj) {
+        if (rblPojoObj.getTotal_amount_due() == null || rblPojoObj.getPrevious_balance() == null || rblPojoObj.getDomestic_transactions() == null) {
             return true;
+        } else {
+            return false;
         }
     }
 }
