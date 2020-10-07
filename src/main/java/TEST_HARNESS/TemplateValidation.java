@@ -64,22 +64,25 @@ public class TemplateValidation {
 
     private RBLPojo generateRBLPojoObject(JsonObject parserResponse, String fileName) {
         Double total_amt_due = JsonUtils
-                .hasKeyWithNonNullValue(parserResponse, "transformed_data.statement_details.dues.total_amount_due") ? JsonUtils
-                .getJsonElement(parserResponse, "transformed_data.statement_details.dues.total_amount_due").getAsDouble() : null;
+                .hasKeyWithNonNullValue(parserResponse, Util.getMainJsonFieldName() + ".statement_details.dues.total_amount_due") ? JsonUtils
+                .getJsonElement(parserResponse, Util.getMainJsonFieldName() + ".statement_details.dues.total_amount_due").getAsDouble() : null;
 
         Double new_debits = JsonUtils
-                .hasKeyWithNonNullValue(parserResponse, "transformed_data.statement_details.account_summary.new_debits") ? JsonUtils
-                .getJsonElement(parserResponse, "transformed_data.statement_details.account_summary.new_debits").getAsDouble() : null;
-        Double previous_balance = JsonUtils
-                .hasKeyWithNonNullValue(parserResponse, "transformed_data.statement_details.account_summary.previous_balance") ? JsonUtils
-                .getJsonElement(parserResponse, "transformed_data.statement_details.account_summary.previous_balance").getAsDouble() : null;
+                .hasKeyWithNonNullValue(parserResponse, Util.getMainJsonFieldName() + ".statement_details.account_summary.new_debits") ? JsonUtils
+                .getJsonElement(parserResponse, Util.getMainJsonFieldName() + ".statement_details.account_summary.new_debits").getAsDouble() : null;
+        Double previous_balance = JsonUtils.hasKeyWithNonNullValue(parserResponse,
+                Util.getMainJsonFieldName() + ".statement_details.account_summary.previous_balance") ? JsonUtils
+                .getJsonElement(parserResponse, Util.getMainJsonFieldName() + ".statement_details.account_summary.previous_balance")
+                .getAsDouble() : null;
 
-        Double last_payment_received = JsonUtils
-                .hasKeyWithNonNullValue(parserResponse, "transformed_data.statement_details.account_summary.last_payment_received") ? JsonUtils
-                .getJsonElement(parserResponse, "transformed_data.statement_details.account_summary.last_payment_received").getAsDouble() : null;
-        JsonArray domestic_transactions = JsonUtils
-                .hasKeyWithNonNullValue(parserResponse, "transformed_data.statement_details.transactions.domestic_transactions") ? JsonUtils
-                .getJsonElement(parserResponse, "transformed_data.statement_details.transactions.domestic_transactions").getAsJsonArray() : null;
+        Double last_payment_received = JsonUtils.hasKeyWithNonNullValue(parserResponse,
+                Util.getMainJsonFieldName() + ".statement_details.account_summary.last_payment_received") ? JsonUtils
+                .getJsonElement(parserResponse, Util.getMainJsonFieldName() + ".statement_details.account_summary.last_payment_received")
+                .getAsDouble() : null;
+        JsonArray domestic_transactions = JsonUtils.hasKeyWithNonNullValue(parserResponse,
+                Util.getMainJsonFieldName() + ".statement_details.transactions.domestic_transactions") ? JsonUtils
+                .getJsonElement(parserResponse, Util.getMainJsonFieldName() + ".statement_details.transactions.domestic_transactions")
+                .getAsJsonArray() : null;
         return new RBLPojo(fileName, total_amt_due, new_debits, previous_balance, last_payment_received, domestic_transactions);
     }
 
