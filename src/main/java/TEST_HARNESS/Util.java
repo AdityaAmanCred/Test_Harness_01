@@ -331,7 +331,7 @@ public final class Util {
     }
 
     public static String getMainJsonFieldName() {
-        if (Application.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || Application.getPrimaryParserName().equals(ParserName.OPTIMUS)) {
+        if (Application.getPrimaryParserName().equals(ParserName.BUMBLEBEE)) {
             return "transformed_data";
         } else {
             return "json_object";
