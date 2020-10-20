@@ -1,9 +1,7 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
