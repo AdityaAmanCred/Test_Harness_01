@@ -1,6 +1,5 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.fetchParserResponses;
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
 import lombok.Getter;
@@ -61,12 +60,15 @@ public class Application {
 
     public static void main(String[] args) throws IOException, ParseException {
         //Downloader the PDF
-        Downloader downloader = new PortkeyDownloader(0.5);
+        Downloader downloader = new PortkeyDownloader(2.0);
         downloader.downloadPDFs();
+
 
         //Fetch Responses
         // For fetching all Parser's data(Optimus,Bumblebee, Pandora)
-        fetchParserResponses();
+        ParsePdf parsePdf = new ParsePdf();
+        parsePdf.fetchParserResponses();
+
 
         //For fetching MorningStar data
         //        MorningStar morningStar = new MorningStar(20.0);

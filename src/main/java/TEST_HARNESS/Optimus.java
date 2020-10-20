@@ -37,8 +37,6 @@ public class Optimus extends ParserResponses {
             envName = "stg";
         }
 
-        Environment otherEnv = (Application.getPrimaryParserName() == ParserName.OPTIMUS) ? Application.getSecondaryParserEnv() : Application
-                .getPrimaryParserEnv();
         String otherParser = (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) ? fetchProperty(
                 "SECONDARY_PARSER_NAME") : fetchProperty("PRIMARY_PARSER_NAME");
         if (otherParser.equalsIgnoreCase("BUMBLEBEE")) {
