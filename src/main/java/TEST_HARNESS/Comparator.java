@@ -186,8 +186,8 @@ public class Comparator {
                 }
                 Standalone obj = (Application.getCompareAgainst() == CompareAgainst.SECONDARY) ? new Variance(fileName, "null",
                         removeRedundantDifference(leftFlatMap.get(k))) : new Standalone(fileName, "null");
-                if ((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
-                        .getExpectedValue()) || obj instanceof Standalone) {//Uncomment if-condition to check null values for primary/secondary parser, even if other parser values are null too//
+                if (((obj instanceof Variance) && !obj.getCapturedValue().equals(((Variance) obj)
+                        .getExpectedValue())) || !(obj instanceof Variance)) {//Uncomment the if-condition to flag null values for primary/secondary parser, even if other parser values are null too//
                     tmpArr.add(obj);
                 }
                 if (tmpArr.size() > 0) {
