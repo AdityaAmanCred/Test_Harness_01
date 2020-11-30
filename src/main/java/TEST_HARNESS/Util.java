@@ -236,8 +236,8 @@ public final class Util {
 
     public static String getMainJsonFieldName() {
         if (Application.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || (Application.getPrimaryParserName()
-                                                                                           .equals(ParserName.OPTIMUS) && fetchProperty(
-                "COMPARISON_MODE").equalsIgnoreCase("SECONDARY") && Application.getSecondaryParserName().equals(ParserName.BUMBLEBEE))) {
+                                                                                           .equals(ParserName.OPTIMUS) && Application
+                .getSecondaryParserName().equals(ParserName.BUMBLEBEE))) {
             return "transformed_data";
         } else {
             return "json_object";
