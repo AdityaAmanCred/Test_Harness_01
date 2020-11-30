@@ -118,15 +118,19 @@ public class Comparator {
     }
 
     public void preprocess(JSONObject requestBody) throws IOException, ParseException {
-        JSONObject standaloneAnalysisJsonObject = (JSONObject) readJsonFile("StandaloneAnalysisResource.json");
-        JSONObject issuerJson = getIssuerDetails(standaloneAnalysisJsonObject, fetchProperty("ISSUER"));
-        JSONObject cardDetails = (JSONObject) requestBody.get("card_details");
-        if (cardDetails.get("card_number") == null) {
-            cardDetails.put("card_number", issuerJson.get("card_number"));
+        try {
+            JSONObject standaloneAnalysisJsonObject = (JSONObject) readJsonFile("StandaloneAnalysisResource.json");
+            JSONObject issuerJson = getIssuerDetails(standaloneAnalysisJsonObject, fetchProperty("ISSUER"));
+            JSONObject cardDetails = (JSONObject) requestBody.get("card_details");
+            if (cardDetails.get("card_number") == null) {
+                cardDetails.put("card_number", issuerJson.get("card_number"));
+            }
+            cardDetails.put("instrument_id", issuerJson.get("instrument_id"));
+            JSONObject userDetails = (JSONObject) requestBody.get("user_details");
+            userDetails.put("user_id", standaloneAnalysisJsonObject.get("user_id"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        cardDetails.put("instrument_id", issuerJson.get("instrument_id"));
-        JSONObject userDetails = (JSONObject) requestBody.get("user_details");
-        userDetails.put("user_id", standaloneAnalysisJsonObject.get("user_id"));
     }
 
     public void nullCheck() throws IOException, ParseException {
