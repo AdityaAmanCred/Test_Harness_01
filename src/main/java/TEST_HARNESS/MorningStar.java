@@ -31,7 +31,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "operations_" + isin, ++fetchCounter);
+                saveResponse(response.body().bytes(), "operations_" + isin, ++primaryParserFetchCounter);
                 Environment env_prod = Environment.PROD;
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
@@ -56,7 +56,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "perfomance_" + isin, ++fetchCounter);
+                saveResponse(response.body().bytes(), "perfomance_" + isin, ++primaryParserFetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -80,7 +80,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "ratings_" + isin, ++fetchCounter);
+                saveResponse(response.body().bytes(), "ratings_" + isin, ++primaryParserFetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -104,7 +104,7 @@ public class MorningStar extends Responses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), "portfolio_" + isin, ++fetchCounter);
+                saveResponse(response.body().bytes(), "portfolio_" + isin, ++primaryParserFetchCounter);
             } else {
                 System.out.println("On " + env.toString() + " ResponseCode: " + response.code() + " for isin: " + isin);
             }
@@ -114,7 +114,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllOperationsData(Environment env) throws IOException {
-        setFetchCounter(0);
+        setPrimaryParserFetchCounter(0);
         for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchOperationsData(isin, env);
@@ -122,7 +122,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllPerfomanceData(Environment env) throws IOException {
-        setFetchCounter(0);
+        setPrimaryParserFetchCounter(0);
         for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchPerfomanceData(isin, env);
@@ -131,7 +131,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllRatingsData(Environment env) throws IOException {
-        setFetchCounter(0);
+        setPrimaryParserFetchCounter(0);
         for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchRatingsData(isin, env);
@@ -139,7 +139,7 @@ public class MorningStar extends Responses {
     }
 
     public void fetchAllPortfolioData(Environment env) throws IOException {
-        setFetchCounter(0);
+        setPrimaryParserFetchCounter(0);
         for (String isin : isinList.get(0)) {
             rateLimiter.acquire(1);
             fetchPortfolioData(isin, env);

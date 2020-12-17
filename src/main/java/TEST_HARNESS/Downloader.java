@@ -10,50 +10,61 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
 
 @Data
-abstract class Downloader {
-    protected int downloadcount;
+abstract class Downloader implements Runnable {
+    protected String objectId;
 
-    protected Set<List<String>> csvRows = new HashSet<>();
+    protected String userId;
 
-    protected Set<String> downloadedFiles = new HashSet<>();
-
-    protected RateLimiter rateLimiter;
-
-    protected int retryAttemptsLeft;
-
-    final protected int maxRetryAttempts = 3;
-
-    protected Downloader(double rate) {
-        this.setFileIds();
-        this.downloadcount = 0;
-        this.rateLimiter = RateLimiter.create(rate);
-        this.retryAttemptsLeft = maxRetryAttempts;
-        if (getNames("PDF_DOWNLOAD_LOC").size() > 0) {
-            this.downloadedFiles = getNames("PDF_DOWNLOAD_LOC");
-            this.downloadcount = downloadedFiles.size();
-        }
+    protected Downloader(String objectId, String userId) {
+        this.objectId = objectId;
+        this.userId = userId;
     }
+    //    protected int downloadcount;
+    //
+    //    protected Set<List<String>> csvRows = new HashSet<>();
+    //
+    //    protected Set<String> downloadedFiles = new HashSet<>();
+    //
+    //    protected RateLimiter rateLimiter;
+    //
+    //    protected int retryAttemptsLeft;
+    //
+    //    final protected int maxRetryAttempts = 3;
 
-    abstract boolean downloadPdf(String... args) throws IOException;
+    //    protected Downloader(double rate) {
+    //        this.setFileIds();
+    //        this.downloadcount = 0;
+    //        this.rateLimiter = RateLimiter.create(rate);
+    //        this.retryAttemptsLeft = maxRetryAttempts;
+    //        if (getNames("PDF_DOWNLOAD_LOC").size() > 0) {
+    //            this.downloadedFiles = getNames("PDF_DOWNLOAD_LOC");
+    //            this.downloadcount = downloadedFiles.size();
+    //        }
+    //    }
 
-    abstract void downloadPDFs();
+    abstract void downloadPdf() throws IOException;
 
-    public void setFileIds() {
-        csvRows = readCSVLineByLine(fetchProperty("FILE_IDS_CSV")).stream().collect(Collectors.toSet());
-    }
+    //    abstract void downloadPDFs();
+
+    //    public void setFileIds() {
+    //        csvRows = readCSVLineByLine(fetchProperty("FILE_IDS_CSV")).stream().collect(Collectors.toSet());
+    //    }
 
     public void savePDFFile(byte[] bytes, String fileName) {
         File file = new File(fetchProperty("PDF_DOWNLOAD_LOC") + fileName + ".pdf");
         try {
             OutputStream os = new FileOutputStream(file);
             os.write(bytes);
-            System.out.println("Downloaded: " + fileName + ".pdf downloadCount: " + ++this.downloadcount);
+            System.out.println("DownloadThread: [" + Thread.currentThread()
+                                                           .getId() + "] downloaded: " + fileName + ".pdf downloadCount: " + ++DownloadExecutor.downloadcount);
             os.close();
+            DownloadExecutor.downloadedFiles.add(fileName);
         } catch (Exception e) {
             System.out.println("Error in downloading file: " + fileName + " :" + e);
         }

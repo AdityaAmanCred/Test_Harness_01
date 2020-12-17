@@ -5,16 +5,17 @@ import static TEST_HARNESS.Util.setComparisonParameter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import com.google.common.util.concurrent.RateLimiter;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Data
 public abstract class Responses {
-    protected RateLimiter rateLimiter;
+    //    protected RateLimiter rateLimiter;
 
-    protected int fetchCounter;
+    protected int primaryParserFetchCounter;
+
+    protected int secondaryParserFetchCounter;
 
     protected int retryAttemptsLeft;
 
@@ -24,9 +25,9 @@ public abstract class Responses {
     @Setter
     protected static ParserType parserType;
 
-    public Responses(double fetchRate) {
-        this.rateLimiter = RateLimiter.create(fetchRate);
-        this.fetchCounter = 0;
+    public Responses() {
+        //        this.rateLimiter = RateLimiter.create(fetchRate);
+        this.primaryParserFetchCounter = 0;
         this.retryAttemptsLeft = maxretryAttempts;
         setComparisonParameter();
     }

@@ -11,21 +11,21 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class Bumblebee extends ParserResponses {
-    public Bumblebee(double fetchRate) {
-        super(fetchRate);
+    public Bumblebee(String fileName, Environment environment) {
+        super(fileName, environment);
         this.parserName = ParserName.BUMBLEBEE;
     }
 
     @Override
-    public boolean fetchResponse(String fileName, Environment env) {
+    public void fetchResponse() {
         String template_id = "";
         if (this.getParserType() == ParserType.PRIMARY) {
             template_id = this.getPrimaryParserTemplateId();
         } else {
             template_id = this.getSecondaryParserTemplateId();
         }
-        if (env == Environment.PROD) {
-            this.envName = "prod";
+        if (environment == Environment.PROD) {
+            envName = "prod";
         } else {
             envName = "stg";
         }
@@ -43,14 +43,18 @@ public class Bumblebee extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, ++fetchCounter);
-                return true;
+                saveResponse(response.body().bytes(), fileName, ++primaryParserFetchCounter);
+                ParsingExecutor.fetchedFileNamesPrimaryParser.add(fileName);
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+    }
+
+    @Override
+    public void run() {
+        fetchResponse();
     }
 }

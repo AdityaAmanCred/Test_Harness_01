@@ -1,6 +1,5 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +40,7 @@ public class Pandorastreet extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, ++fetchCounter);
+                saveResponse(response.body().bytes(), fileName, ++primaryParserFetchCounter);
                 return true;
             } else {
                 System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);

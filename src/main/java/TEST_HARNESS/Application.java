@@ -1,6 +1,9 @@
 package TEST_HARNESS;
 
 import java.io.IOException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import org.json.simple.parser.ParseException;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,17 +61,20 @@ public class Application {
         Application.secondaryParserName = parserName;
     }
 
+    public static BlockingQueue<String> blockingQueue = new LinkedBlockingDeque<>(10);
+
     public static void main(String[] args) throws IOException, ParseException {
         //Downloader the PDF
-        Downloader downloader = new PortkeyDownloader(1.0);
-        downloader.downloadPDFs();
-
+        BlockingQueue<String> blockingQueue = new ArrayBlockingQueue(100);
+        //        DownloadExecutor downloadExecutor = new DownloadExecutor(4, blockingQueue, 1);
+        //        downloadExecutor.downloadPDFs();
+        //        Downloader downloader = new PortkeyDownloader(1.0);
+        //        downloader.downloadPDFs();
 
         //Fetch Responses
         // For fetching all Parser's data(Optimus,Bumblebee, Pandora)
         ParsePdf parsePdf = new ParsePdf();
-        parsePdf.fetchParserResponses();
-
+        parsePdf.executeParsing(3,2,10,5);
 
         //For fetching MorningStar data
         //        MorningStar morningStar = new MorningStar(20.0);
@@ -76,11 +82,11 @@ public class Application {
         //        morningStar.fetchAllOperationsData(Environment.STAGE);
 
         //Running Comparator
-        Comparator comparator = new Comparator();
-        comparator.compareAll();
+        //        Comparator comparator = new Comparator();
+        //        comparator.compareAll();
 
         //Generate Results
-        GenerateResults generateResults = new GenerateResults();
-        generateResults.generate(comparator);
+        //        GenerateResults generateResults = new GenerateResults();
+        //        generateResults.generate(comparator);
     }
 }
