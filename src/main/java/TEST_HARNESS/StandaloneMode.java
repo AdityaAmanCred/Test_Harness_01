@@ -15,6 +15,7 @@ public class StandaloneMode {
         Request request = new Request.Builder().url("http://statement-service.stg.dreamplug.net/statement/consumer/consolidate").method("POST", body)
                                                .addHeader("Content-Type", "application/json").build();
         Response response = client.newCall(request).execute();
+        response.close();
         return response.code();
     }
 }

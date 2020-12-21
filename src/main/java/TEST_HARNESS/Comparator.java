@@ -47,9 +47,10 @@ public class Comparator {
 
     private TemplateValidation templateValidation = new TemplateValidation();
 
-    public Comparator() {
+    public Comparator() throws InterruptedException {
         keysToCompare = fetchProperty("KEY_FILTER");
         setComparisonParameter();
+        Thread.sleep(5000);
     }
 
     private void compare(String fileName) throws IOException, ParseException {

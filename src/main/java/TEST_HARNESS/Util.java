@@ -175,6 +175,7 @@ public final class Util {
 
     public static boolean isValidParserSelection() {
         ArrayList<ParserName> parsers = new ArrayList<>();
+
         parsers.add(Application.getPrimaryParserName());
         parsers.add(Application.getSecondaryParserName());
         if (parsers.get(0).equals(parsers.get(1)) && Application.getPrimaryParserEnv() == Application.getSecondaryParserEnv() && fetchProperty(
@@ -253,4 +254,57 @@ public final class Util {
             Application.setCompareAgainst(CompareAgainst.STANDALONE);
         }
     }
+
+    public static ParserName getParserNameForParserType(ParserType parserType) {
+        ParserName parserName = null;
+        if (parserType == ParserType.PRIMARY) {
+            if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET") || fetchProperty("PRIMARY_PARSER_NAME")
+                    .equalsIgnoreCase("PANDORA")) {
+                parserName = ParserName.PANDORASTREET;
+            } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+                parserName = ParserName.OPTIMUS;
+            } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+                parserName = ParserName.BUMBLEBEE;
+            } else {
+                parserName = ParserName.NIL;
+            }
+        } else {
+            if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET")) {
+                parserName = ParserName.PANDORASTREET;
+            } else if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
+                parserName = ParserName.OPTIMUS;
+            } else if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("BUMBLEBEE")) {
+                parserName = ParserName.BUMBLEBEE;
+            } else {
+                Application.setSecondaryParserName(ParserName.NIL);
+                Application.setCompareAgainst(CompareAgainst.STANDALONE);
+            }
+        }
+        return parserName;
+    }
+
+    public static Set presentInDIROneAndNotInDirTwo(String dirOneLoc, String dirTwoLoc) {
+        Set dirOneFiles = getNames(dirOneLoc);
+        Set dirTwoFiles = getNames(dirTwoLoc);
+        dirOneFiles.removeAll(dirTwoFiles);
+        return dirOneFiles;
+    }
+
+    public static void setParserNames() {
+        if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("bumblebee")) {
+            Application.setPrimaryParserName(ParserName.BUMBLEBEE);
+        } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("optimus")) {
+            Application.setPrimaryParserName(ParserName.OPTIMUS);
+        } else {
+            Application.setPrimaryParserName(ParserName.PANDORASTREET);
+        }
+        if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("bumblebee")) {
+            Application.setSecondaryParserName(ParserName.BUMBLEBEE);
+        } else if (fetchProperty("SECONDARY_PARSER_NAME").equalsIgnoreCase("optimus")) {
+            Application.setSecondaryParserName(ParserName.OPTIMUS);
+        } else {
+            Application.setSecondaryParserName(ParserName.PANDORASTREET);
+        }
+    }
+
 }

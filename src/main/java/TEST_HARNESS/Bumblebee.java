@@ -10,32 +10,19 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Bumblebee extends ParserResponses {
-    public Bumblebee(String fileName, Environment environment) {
-        super(fileName, environment);
-        this.parserName = ParserName.BUMBLEBEE;
+public class Bumblebee extends Parser {
+    public Bumblebee(ParserType parserType, String fileName) {
+        super(parserType, fileName);
     }
 
-    @Override
-    public void fetchResponse() {
-        String template_id = "";
-        if (this.getParserType() == ParserType.PRIMARY) {
-            template_id = this.getPrimaryParserTemplateId();
-        } else {
-            template_id = this.getSecondaryParserTemplateId();
-        }
-        if (environment == Environment.PROD) {
-            envName = "prod";
-        } else {
-            envName = "stg";
-        }
-        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS)
-                                                .writeTimeout(60, TimeUnit.SECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", template_id)
-                                                      .addFormDataPart("pdf_to_transform", fileName, RequestBody
-                                                              .create(MediaType.parse("application/octet-stream"), new File(pdfLocation + fileName)))
-                                                      .build();
-        Request request = new Request.Builder().url("http://bumblebee." + envName + ".dreamplug.net/xfmr/v1/pdf2data").method("POST", body)
+    public boolean fetchResponse() {
+        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60, TimeUnit.SECONDS).readTimeout(180, TimeUnit.SECONDS)
+                                                .writeTimeout(180, TimeUnit.SECONDS).build();
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("template_id", this.templateId)
+                                                      .addFormDataPart("pdf_to_transform", this.fileName, RequestBody
+                                                              .create(MediaType.parse("application/octet-stream"),
+                                                                      new File(this.pdfLocation + this.fileName))).build();
+        Request request = new Request.Builder().url("http://bumblebee." + this.envName + ".dreamplug.net/xfmr/v1/pdf2data").method("POST", body)
                                                .addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
                                                .addHeader("cache-control", "no-cache")
                                                .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
@@ -43,14 +30,15 @@ public class Bumblebee extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, ++primaryParserFetchCounter);
-                ParsingExecutor.fetchedFileNamesPrimaryParser.add(fileName);
+                saveResponse(response.body().bytes(), this.fileName);
+                return true;
             } else {
-                System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
+                System.out.println("On " + this.envName + " ResponseCode: " + response.code() + " for " + this.fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     @Override

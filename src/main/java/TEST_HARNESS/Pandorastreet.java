@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.getNames;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -10,27 +11,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Pandorastreet extends ParserResponses {
-    public Pandorastreet(double fetchRate) {
-        super(fetchRate);
-        this.parserName = ParserName.PANDORASTREET;
+public class Pandorastreet extends Parser {
+    public Pandorastreet(ParserType parserType, String fileName) {
+        super(parserType, fileName);
     }
 
-    @Override
-    public boolean fetchResponse(String fileName, Environment env) {
-        String feed_id = "";
-        if (this.getParserType() == ParserType.PRIMARY) {
-            feed_id = this.getPrimaryParserTemplateId();
-        } else {
-            feed_id = this.getSecondaryParserTemplateId();
-        }
-        if (env == Environment.PROD) {
-            envName = "prod";
-        } else {
-            envName = "stg";
-        }
+    public boolean fetchResponse() {
         OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(15000, TimeUnit.MILLISECONDS).build();
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", feed_id)
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("feed_id", this.templateId)
                                                       .addFormDataPart("file", fileName, RequestBody
                                                               .create(MediaType.parse("application/octet-stream"), new File(pdfLocation + fileName)))
                                                       .build();
@@ -40,14 +28,19 @@ public class Pandorastreet extends ParserResponses {
         try {
             Response response = client.newCall(request).execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName, ++primaryParserFetchCounter);
+                saveResponse(response.body().bytes(), fileName);
                 return true;
             } else {
-                System.out.println("On " + envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
+                System.out.println("On " + this.envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public void run() {
+        fetchResponse();
     }
 }

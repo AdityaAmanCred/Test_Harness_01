@@ -1,9 +1,10 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.Util.setParserNames;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.CountDownLatch;
 import org.json.simple.parser.ParseException;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,14 +28,6 @@ public class Application {
 
     public static Environment getSecondaryParserEnv() {
         return secondaryParserEnv;
-    }
-
-    public static void setPrimaryParserEnv(Environment primaryParserEnv) {
-        Application.primaryParserEnv = primaryParserEnv;
-    }
-
-    public static void setSecondaryParserEnv(Environment secondaryParserEnv) {
-        Application.secondaryParserEnv = secondaryParserEnv;
     }
 
     public static void setCompareAgainst(CompareAgainst compareAgainst) {
@@ -61,32 +54,34 @@ public class Application {
         Application.secondaryParserName = parserName;
     }
 
-    public static BlockingQueue<String> blockingQueue = new LinkedBlockingDeque<>(10);
+    public static CountDownLatch pdfCountDownLatch;
 
-    public static void main(String[] args) throws IOException, ParseException {
-        //Downloader the PDF
-        BlockingQueue<String> blockingQueue = new ArrayBlockingQueue(100);
-        //        DownloadExecutor downloadExecutor = new DownloadExecutor(4, blockingQueue, 1);
-        //        downloadExecutor.downloadPDFs();
-        //        Downloader downloader = new PortkeyDownloader(1.0);
-        //        downloader.downloadPDFs();
+    public static BlockingQueue<String> primaryParserBlockingQueue = new ArrayBlockingQueue(100);
+
+    public static BlockingQueue<String> secondaryParserBlockingQueue = new ArrayBlockingQueue(100);
+
+    public static boolean downLoadThreadIsTerminated = false;
+
+    public static CountDownLatch countDownLatch;
+
+    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+        //Download the PDFs
+        setParserNames();
+        Thread downloadThread = new Thread(new DownloadExecutor(DownloaderName.PORTKEY));
+        downloadThread.start();
 
         //Fetch Responses
-        // For fetching all Parser's data(Optimus,Bumblebee, Pandora)
-        ParsePdf parsePdf = new ParsePdf();
-        parsePdf.executeParsing(3,2,10,5);
-
-        //For fetching MorningStar data
-        //        MorningStar morningStar = new MorningStar(20.0);
-        //        morningStar.setParserType(Responses.ParserType.PRIMARY);
-        //        morningStar.fetchAllOperationsData(Environment.STAGE);
+        Thread parsingThread = new Thread(new ParsePdf());
+        parsingThread.start();
 
         //Running Comparator
-        //        Comparator comparator = new Comparator();
-        //        comparator.compareAll();
+        downloadThread.join();
+        parsingThread.join();
+        Comparator comparator = new Comparator();
+        comparator.compareAll();
 
         //Generate Results
-        //        GenerateResults generateResults = new GenerateResults();
-        //        generateResults.generate(comparator);
+        GenerateResults generateResults = new GenerateResults();
+        generateResults.generate(comparator);
     }
 }
