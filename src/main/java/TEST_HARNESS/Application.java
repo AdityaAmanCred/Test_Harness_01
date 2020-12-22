@@ -1,82 +1,52 @@
 package TEST_HARNESS;
 
-import static TEST_HARNESS.Util.setParserNames;
+import static TEST_HARNESS.utils.Util.setParserNames;
 import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import org.json.simple.parser.ParseException;
-import lombok.Getter;
-import lombok.Setter;
+import TEST_HARNESS.comparator.Comparator;
+import TEST_HARNESS.download.DownloadExecutor;
+import TEST_HARNESS.download.DownloaderName;
+import TEST_HARNESS.parse.ParsePdf;
+import TEST_HARNESS.result.GenerateResults;
 
-@Getter
-@Setter
 public class Application {
-    private static CompareAgainst compareAgainst;
+    private static Thread downloadThread;
 
-    private static ParserName primaryParserName;
+    private static Thread parsingThread;
 
-    private static ParserName secondaryParserName;
-
-    private static Environment primaryParserEnv;
-
-    private static Environment secondaryParserEnv;
-
-    public static Environment getPrimaryParserEnv() {
-        return primaryParserEnv;
+    private static void initializeDownloadThread() {
+        downloadThread = new Thread(new DownloadExecutor(DownloaderName.PORTKEY));
     }
 
-    public static Environment getSecondaryParserEnv() {
-        return secondaryParserEnv;
+    private static void initializeparsingThread() {
+        parsingThread = new Thread(new ParsePdf());
     }
 
-    public static void setCompareAgainst(CompareAgainst compareAgainst) {
-        Application.compareAgainst = compareAgainst;
+    static {
+        setParserNames();
+        initializeDownloadThread();
+        initializeparsingThread();
     }
 
-    public static CompareAgainst getCompareAgainst() {
-        return compareAgainst;
+    private static void waitForDownloadAndParsingThreadsToTerminate() {
+        try {
+            downloadThread.join();
+            parsingThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
-
-    public static ParserName getPrimaryParserName() {
-        return primaryParserName;
-    }
-
-    public static void setPrimaryParserName(ParserName parserName) {
-        Application.primaryParserName = parserName;
-    }
-
-    public static ParserName getSecondaryParserName() {
-        return secondaryParserName;
-    }
-
-    public static void setSecondaryParserName(ParserName parserName) {
-        Application.secondaryParserName = parserName;
-    }
-
-    public static CountDownLatch pdfCountDownLatch;
-
-    public static BlockingQueue<String> primaryParserBlockingQueue = new ArrayBlockingQueue(100);
-
-    public static BlockingQueue<String> secondaryParserBlockingQueue = new ArrayBlockingQueue(100);
-
-    public static boolean downLoadThreadIsTerminated = false;
-
-    public static CountDownLatch countDownLatch;
 
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
         //Download the PDFs
-        setParserNames();
-        Thread downloadThread = new Thread(new DownloadExecutor(DownloaderName.PORTKEY));
         downloadThread.start();
 
-        //Fetch Responses
-        Thread parsingThread = new Thread(new ParsePdf());
+        //Fetch Transformed JSONs from Parsers
         parsingThread.start();
 
         //Running Comparator
-        downloadThread.join();
-        parsingThread.join();
+        waitForDownloadAndParsingThreadsToTerminate();
         Comparator comparator = new Comparator();
         comparator.compareAll();
 
