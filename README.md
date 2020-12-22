@@ -1,22 +1,22 @@
 # How to use this?:
 
-1)Update the application.properties file to set the following variables:
+1)Update the **application.properties** file to set the following variables:
 
-## ParserDetails
+## Parser Details:  
 PRIMARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'  
 SECONDARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'  
-ISSUER: [Citi Bank,HDFC Bank,SBI,ICICI Bank,Kotak Mahindra Bank,YES Bank,IndusInd Bank,Standard Chartered Bank,Axis Bank,RBL Bank,HSBC Bank,AMEX]  
-PRIMARY_PARSER_TEMPLATE_ID: Template id for primary parser  
-SECONDARY_PARSER_TEMPLATE_ID : Template id on secondary parser  
+ISSUER: ['Citi Bank','HDFC Bank','SBI,ICICI Bank','Kotak Mahindra Bank','YES Bank','IndusInd Bank','Standard Chartered Bank','Axis Bank','RBL Bank','HSBC Bank','AMEX']    
+PRIMARY_PARSER_TEMPLATE_ID: Template id for the primary parser    
+SECONDARY_PARSER_TEMPLATE_ID : Template id for the secondary parser  
 PRIMARY_PARSER_ENV= 'STAGE' / 'PROD'  
 SECONDARY_PARSER_ENV='STAGE' / 'PROD'  
-COMPARISON_MODE: 'SECONDARY'/'STANDALONE'(The former is the one almost always used ;ie when you are comparing one pair(parser,template with another.  
+COMPARISON_MODE: 'SECONDARY'/'STANDALONE'(Pick Secondary if you wish to compare a pair{parser,template_id} against another)   
 SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED=false/true  
-PDF_DOWNLOAD_LOC: Absolute location on your local system where PDFs will first be downloaeded to.  
+PDF_DOWNLOAD_LOC: Absolute location on your local system where PDFs will be downloaded to.  
 PRIMARY_DIR: Absolute location where Primary parser transformed responses for these PDFs are saved to.  
 SECONDARY_DIR: Absolute location where Secondary parser transformed responses for these PDFs are saved to.  
 RESULT_DIR: Absolute location where Test Harness results are saved to.  
-FILE_IDS_CSV: Absolute location of csv file containing ids(pdf ids).  
+FILE_IDS_CSV: Absolute location of the csv file containing object_ids, user_ids for PDFs(Downloaded from Metabase, Check test_harness channel for the query).    
 KEY_FILTER= (This string determines what set of fields(keys) will be taken into consideration by comparator.Refer 'GUIDELINES FOR KEY_FILTER:' below for more.)  
 
 ##  GUIDELINES FOR KEY_FILTER:
@@ -80,4 +80,8 @@ NUM_PRIMARYPARSER_THREADS=n(Where n is an integer that represents the fixed numb
 PRIMARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-limit for primary parser)    
 NUM_SECONDARYPARSER_THREADS=n(Where n is an integer that represents fixed number of threads, you want to spawn for your secondary parser)  
 SECONDARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-limit for secondary parser) 
+
+## Note:
+* Name the directories on your local identical to the directory names mentioned under 'Parser Details' section.  
+['PDF_DOWNLOAD_LOC,'PRIMARY_DIR','SECONDARY_DIR','RESULT_DIR']  
 
