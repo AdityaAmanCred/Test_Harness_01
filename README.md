@@ -1,76 +1,87 @@
-How to use this?:
+# How to use this?:
 
-1)Update the application.properties file to set the following variables:
+1)Update the **application.properties** file to set the following variables:
 
-PRIMARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'
-SECONDARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'
-PRIMARY_PARSER_TEMPLATE_ID: Template id for primary parser
-SECONDARY_PARSER_TEMPLATE_ID : Template id on secondary parser
-PRIMARY_PARSER_ENV= 'STAGE' / 'PROD'
-SECONDARY_PARSER_ENV='STAGE' / 'PROD'
-COMPARISON_MODE: 'SECONDARY'/'STANDALONE'(The former is the one almost always used ;ie when you are comparing PRIMARY responses to SECONDARY responses)
-PDF_DOWNLOAD_LOC: Absolute location on your local system where PDFs will first be downloaeded to.
-PRIMARY_DIR: Absolute location where Primary parser transformed responses for these PDFs are saved to.
-SECONDARY_DIR: Absolute location where Secondary parser transformed responses for these PDFs are saved to.
-RESULT_DIR: Absolute location where Test Harness results are saved to.
-FILE_IDS_CSV: Absolute location of csv file containing ids(pdf ids).
-KEY_FILTER= This string determines what set of fields(keys) will be taken into consideration by comparator.Refer 'GUIDELINES FOR KEY_FILTER:' below for more.
-//Morning Star
-ISIN_CSV: Absolute location of csv file containing ISINs.(For track related testing)
+## Parser Details:  
+PRIMARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'  
+SECONDARY_PARSER_NAME: 'BUMBLEBEE' / 'PANDORASTREET' / 'OPTIMUS'  
+ISSUER: ['Citi Bank','HDFC Bank','SBI,ICICI Bank','Kotak Mahindra Bank','YES Bank','IndusInd Bank','Standard Chartered Bank','Axis Bank','RBL Bank','HSBC Bank','AMEX']    
+PRIMARY_PARSER_TEMPLATE_ID: Template id for the primary parser    
+SECONDARY_PARSER_TEMPLATE_ID : Template id for the secondary parser  
+PRIMARY_PARSER_ENV= 'STAGE' / 'PROD'  
+SECONDARY_PARSER_ENV='STAGE' / 'PROD'  
+COMPARISON_MODE: 'SECONDARY'/'STANDALONE'(Pick Secondary if you wish to compare a pair{parser,template_id} against another)   
+SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED=false/true  
+PDF_DOWNLOAD_LOC: Absolute location on your local system where PDFs will be downloaded to.  
+PRIMARY_DIR: Absolute location where Primary parser transformed responses for these PDFs are saved to.  
+SECONDARY_DIR: Absolute location where Secondary parser transformed responses for these PDFs are saved to.  
+RESULT_DIR: Absolute location where Test Harness results are saved to.  
+FILE_IDS_CSV: Absolute location of the csv file containing object_ids, user_ids for PDFs(Downloaded from Metabase, Check test_harness channel for the query).    
+KEY_FILTER= (This string determines what set of fields(keys) will be taken into consideration by comparator.Refer 'GUIDELINES FOR KEY_FILTER:' below for more.)  
 
-GUIDELINES FOR KEY_FILTER:
+##  GUIDELINES FOR KEY_FILTER:
 
-For the filtering examples, let's use an the example object of type Issue
+For the filtering examples, let's use an the example with the JSON below. 
+```json
+{  
+  "id": "ISSUE-1",  
+  "issueSummary": "Dragons Need Fed",  
+  "issueDetails": "I need my dragons fed pronto.",  
+  "reporter": {  
+    "firstName": "Daenerys",  
+    "lastName": "Targaryen"  
+  },  
+  "assignee": {  
+    "firstName": "Jorah",  
+    "lastName": "Mormont"  
+  },  
+  "actions": [  
+    {  
+      "id": null,  
+      "type": "COMMENT",  
+      "text": "I'm going to let Daario get this one.",  
+      "user": {  
+        "firstName": "Jorah",  
+        "lastName": "Mormont"  
+      }  
+    },  
+    {  
+      "id": null,  
+      "type": "CLOSE",  
+      "text": "All set.",  
+      "user": {  
+        "firstName": "Daario",  
+        "lastName": "Naharis"  
+      }  
+    }  
+  ],  
+  "properties": {  
+    "priority": "1",  
+    "email": "motherofdragons@got.com"  
+  }  
+}  
+```
 
-{
-  "id": "ISSUE-1",
-  "issueSummary": "Dragons Need Fed",
-  "issueDetails": "I need my dragons fed pronto.",
-  "reporter": {
-    "firstName": "Daenerys",
-    "lastName": "Targaryen"
-  },
-  "assignee": {
-    "firstName": "Jorah",
-    "lastName": "Mormont"
-  },
-  "actions": [
-    {
-      "id": null,
-      "type": "COMMENT",
-      "text": "I'm going to let Daario get this one.",
-      "user": {
-        "firstName": "Jorah",
-        "lastName": "Mormont"
-      }
-    },
-    {
-      "id": null,
-      "type": "CLOSE",
-      "text": "All set.",
-      "user": {
-        "firstName": "Daario",
-        "lastName": "Naharis"
-      }
-    }
-  ],
-  "properties": {
-    "priority": "1",
-    "email": "motherofdragons@got.com"
-  }
-}
+1) **Select all**(All the 'keys' present in JSON): '**'  
 
-1) Select all(All the 'keys' present in JSON):
-   **
+2) **Select a single field:**  'assignee.firstName'  
 
-2) Select a single field:
-   example:
-   assignee.firstName
+3) **Select set of fields:** 'id,actions,properties.email' (Note use of a dot as delimiter to convey nested json structure)  
 
-3) Select set of fields:
-   example:
-   id,actions,properties.email (Note use of a dot as delimiter to convey nested json structure)
+5) **exclude a field or set of fields:**   
+   '-assignee.lastName' (Note use of '-' sign at the beginning)  
+   '-assignee.lastName,-actions.0.user.firstName' (Not use of number 0 to indicate index   of that particular json in parent JSONARRAY)  
 
-5) exclude a field or set of fields:
-   -assignee.lastName(Note use of '-' sign at the beginning)
-   -assignee.lastName,-actions.0.user.firstName(Not use of number 0 to indicate index of that particular json in parent JSONARRAY)
+
+## CONCURRENCY_AND_RATE_LIMIT_Details  
+NUM_DOWNLOAD_THREADS=n(Where n is an integer that represents the fixed number of download threads, you want to spawn.)
+DOWNLOAD_RATELIMIT=r(Where r is a decimal that represents download rate limit)  
+NUM_PRIMARYPARSER_THREADS=n(Where n is an integer that represents the fixed number of threads, you want to spawn for your primary parser)  
+PRIMARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-limit for primary parser)    
+NUM_SECONDARYPARSER_THREADS=n(Where n is an integer that represents fixed number of threads, you want to spawn for your secondary parser)  
+SECONDARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-limit for secondary parser) 
+
+## Note:
+* Name the directories on your local identical to the directory names mentioned under 'Parser Details' section.  
+['PDF_DOWNLOAD_LOC,'PRIMARY_DIR','SECONDARY_DIR','RESULT_DIR']  
+
