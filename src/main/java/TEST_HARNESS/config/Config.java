@@ -25,9 +25,9 @@ public class Config {
 
     private static Environment secondaryParserEnv;
 
-    private static BlockingQueue<String> primaryParserBlockingQueue = new ArrayBlockingQueue(100);
+    private static BlockingQueue<String> primaryParserBlockingQueue = new ArrayBlockingQueue(5000);
 
-    private static BlockingQueue<String> secondaryParserBlockingQueue = new ArrayBlockingQueue(100);
+    private static BlockingQueue<String> secondaryParserBlockingQueue = new ArrayBlockingQueue(5000);
 
     private static boolean downLoadThreadIsTerminated = false;
 
