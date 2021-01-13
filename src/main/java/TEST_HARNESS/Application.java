@@ -32,6 +32,7 @@ public class Application {
         try {
             downloadThread.join();
             parsingThread.join();
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
