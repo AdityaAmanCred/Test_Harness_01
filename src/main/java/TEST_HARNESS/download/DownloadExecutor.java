@@ -44,7 +44,7 @@ public class DownloadExecutor implements Runnable {
 
     private int maxNumberOfDownloadThreads = 5;
 
-    private int maxDownloadRate = 20;
+    private int maxDownloadRate = 2;
 
     public DownloadExecutor(DownloaderName downloaderName) {
         this.numberOfDownloadThreads = Math.min(maxNumberOfDownloadThreads, Integer.parseInt(fetchProperty("NUM_DOWNLOAD_THREADS")));

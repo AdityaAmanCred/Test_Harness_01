@@ -67,6 +67,14 @@ public class Config {
         return Config.secondaryParserName;
     }
 
+    public static void setPrimaryParserEnv(Environment parserEnv) {
+        Config.primaryParserEnv = parserEnv;
+    }
+
+    public static void setSecondaryParserEnv(Environment parserEnv) {
+        Config.secondaryParserEnv = parserEnv;
+    }
+
     public static void setSecondaryParserName(ParserName parserName) {
         Config.secondaryParserName = parserName;
     }

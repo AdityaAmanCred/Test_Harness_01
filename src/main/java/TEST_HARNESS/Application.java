@@ -1,5 +1,6 @@
 package TEST_HARNESS;
 
+import static TEST_HARNESS.utils.Util.setParserEnvironments;
 import static TEST_HARNESS.utils.Util.setParserNames;
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
@@ -24,6 +25,7 @@ public class Application {
 
     static {
         setParserNames();
+        setParserEnvironments();
         initializeDownloadThread();
         initializeparsingThread();
     }
