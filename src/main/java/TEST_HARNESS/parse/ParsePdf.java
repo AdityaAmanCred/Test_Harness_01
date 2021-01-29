@@ -20,9 +20,11 @@ public class ParsePdf implements Runnable {
 
     private double sRateLimit;
 
-    private double maxPRateLimit = 50;
+    private double maxPRateLimit = Config.getPrimaryParserEnv() == Environment.STAGE ? (Config
+            .getPrimaryParserName() == ParserName.BUMBLEBEE ? 3 : 10) : 1;
 
-    private double maxSRateLimit = 50;
+    private double maxSRateLimit = Config.getSecondaryParserEnv() == Environment.STAGE ? (Config
+            .getSecondaryParserName() == ParserName.BUMBLEBEE ? 3 : 10) : 1;
 
     private BlockingQueue<String> pBlockingQueue;
 
@@ -38,7 +40,7 @@ public class ParsePdf implements Runnable {
         this.nSThreads = Math.min(maxSThreads, Integer.parseInt(fetchProperty("NUM_SECONDARYPARSER_THREADS")));
         this.pRateLimit = Math.min(maxPRateLimit, Double.parseDouble(fetchProperty("PRIMARY_PARSER_RATELIMIT")));
         this.sRateLimit = Math.min(maxSRateLimit, Double.parseDouble(fetchProperty("SECONDARY_PARSER_RATELIMIT")));
-        this.pBlockingQueue =Config.getPrimaryParserBlockingQueue();
+        this.pBlockingQueue = Config.getPrimaryParserBlockingQueue();
         this.sBlockingQueue = Config.getSecondaryParserBlockingQueue();
         this.pParserThread = new Thread(new ParsingExecutor(nPThreads, pRateLimit, pBlockingQueue, ParserType.PRIMARY));
         this.sParserThread = new Thread(new ParsingExecutor(nSThreads, sRateLimit, sBlockingQueue, ParserType.SECONDARY));

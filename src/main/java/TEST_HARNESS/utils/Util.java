@@ -36,6 +36,7 @@ import com.google.gson.JsonParser;
 import com.opencsv.CSVReader;
 import TEST_HARNESS.config.CompareAgainst;
 import TEST_HARNESS.config.Config;
+import TEST_HARNESS.parse.Environment;
 import TEST_HARNESS.result.pojos.Standalone;
 import TEST_HARNESS.parse.ParserName;
 import TEST_HARNESS.parse.ParserType;
@@ -241,8 +242,7 @@ public final class Util {
     }
 
     public static String getMainJsonFieldName() {
-        if (Config.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || (Config.getPrimaryParserName()
-                                                                                           .equals(ParserName.OPTIMUS) && Config
+        if (Config.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || (Config.getPrimaryParserName().equals(ParserName.OPTIMUS) && Config
                 .getSecondaryParserName().equals(ParserName.BUMBLEBEE))) {
             return "transformed_data";
         } else {
@@ -310,6 +310,11 @@ public final class Util {
         } else {
             Config.setSecondaryParserName(ParserName.PANDORASTREET);
         }
+    }
+
+    public static void setParserEnvironments() {
+        Config.setPrimaryParserEnv(fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
+        Config.setSecondaryParserEnv(fetchProperty("SECONDARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
     }
 
 }
