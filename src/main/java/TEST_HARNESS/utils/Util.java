@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
@@ -315,6 +316,17 @@ public final class Util {
     public static void setParserEnvironments() {
         Config.setPrimaryParserEnv(fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
         Config.setSecondaryParserEnv(fetchProperty("SECONDARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
+    }
+
+    public static void writeTofile(String fileName, String jsonString) {
+        //Write JSON file
+        try (FileWriter file = new FileWriter(fetchProperty("RESULT_DIR") + fileName + ".json")) {
+            file.write(jsonString);
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

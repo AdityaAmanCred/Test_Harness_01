@@ -21,7 +21,6 @@ import org.json.simple.parser.ParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import TEST_HARNESS.Application;
 import TEST_HARNESS.config.CompareAgainst;
 import TEST_HARNESS.config.Config;
 import TEST_HARNESS.result.pojos.DiffValues;
