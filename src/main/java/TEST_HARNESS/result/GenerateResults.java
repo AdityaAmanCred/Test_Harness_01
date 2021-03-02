@@ -5,8 +5,7 @@ import static TEST_HARNESS.utils.Util.generateAggregateMap;
 import static TEST_HARNESS.utils.Util.getCommonFileNames;
 import static TEST_HARNESS.utils.Util.getFileNamesFromArray;
 import static TEST_HARNESS.utils.Util.percentage;
-import java.io.FileWriter;
-import java.io.IOException;
+import static TEST_HARNESS.utils.Util.writeTofile;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.json.simple.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import TEST_HARNESS.Application;
 import TEST_HARNESS.config.CompareAgainst;
 import TEST_HARNESS.config.Config;
 import TEST_HARNESS.result.pojos.ValidationFailure;
@@ -29,20 +27,11 @@ import TEST_HARNESS.result.pojos.NullCheck;
 import TEST_HARNESS.result.pojos.StandaloneResult;
 import TEST_HARNESS.result.pojos.StandaloneResults;
 import TEST_HARNESS.result.pojos.TemplateFAILURETYPE;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GenerateResults {
     private final ObjectMapper mapper = new ObjectMapper();
-
-    public void writeTofile(String fileName, String results) {
-        //Write JSON file
-        try (FileWriter file = new FileWriter(fetchProperty("RESULT_DIR") + fileName + ".json")) {
-            file.write(results);
-            file.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public JSONArray generateFieldWiseDifferencesResults(Map<String, JSONArray> map) {
         Map<String, List<String>> aggregatedMap = generateAggregateMap(map);
@@ -122,8 +111,8 @@ public class GenerateResults {
             writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
             writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
-        System.out.printf("Results generated for %d files\n",
-                getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR").size());
+        log.info(String.format("Results generated for %d files",
+                getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR").size()));
     }
 
     public JSONArray generateNullFieldsResults(Map<String, JSONArray> map) {
