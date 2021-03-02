@@ -32,4 +32,8 @@ public class GenericResultPojo<T> {
         this.percentage = null;
         this.results = new ArrayList<>();
     }
+
+    public boolean isEmpty() {
+        return this.results.isEmpty();
+    }
 }

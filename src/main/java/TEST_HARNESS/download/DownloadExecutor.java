@@ -14,11 +14,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import com.google.common.util.concurrent.RateLimiter;
 import TEST_HARNESS.config.Config;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Prithvi Patil
  * @version 1.0
  */
+@Slf4j
 public class DownloadExecutor implements Runnable {
     private int numberOfDownloadThreads;
 
@@ -65,11 +67,11 @@ public class DownloadExecutor implements Runnable {
 
     public void downloadPDFs() throws InterruptedException {
         if (this.csvRows.size() == 0) {
-            System.out.println("All PDFs already downloaded");
+            log.info("All PDFs already downloaded");
         }
         while (this.retryAttemptsLeft-- > 0 && csvRows.size() > 0) {
             if (this.retryAttemptsLeft != this.maxRetryAttempts - 1) {
-                System.out.println("Retrying Download for failed ones..");
+                log.info("Retrying Download for failed ones..");
             }
             Iterator<List<String>> iterator = this.csvRows.iterator();
             while (iterator.hasNext()) {
@@ -80,7 +82,7 @@ public class DownloadExecutor implements Runnable {
                         downloadThreadPool.submit(getDownloader(downloaderName, line.get(0), line.get(1)));
                         iterator.remove();
                     } else {
-                        System.out.println("File " + line.get(0) + " already downloaded.");
+                        log.info("File " + line.get(0) + " already downloaded.");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

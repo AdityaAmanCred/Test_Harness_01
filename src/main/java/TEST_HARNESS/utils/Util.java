@@ -41,7 +41,9 @@ import TEST_HARNESS.parse.Environment;
 import TEST_HARNESS.result.pojos.Standalone;
 import TEST_HARNESS.parse.ParserName;
 import TEST_HARNESS.parse.ParserType;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public final class Util {
     private Util() {
         throw new AssertionError("No instances for you!");
@@ -103,10 +105,8 @@ public final class Util {
             inputStream = new FileInputStream(fileName);
             properties.load(inputStream);
             inputStream.close();
-        } catch (IOException e) {
-            System.out.println(e);
         } catch (Exception e) {
-            System.out.println(e);
+            log.error(String.valueOf(e));
         }
         return properties;
     }
@@ -187,11 +187,11 @@ public final class Util {
         parsers.add(Config.getSecondaryParserName());
         if (parsers.get(0).equals(parsers.get(1)) && Config.getPrimaryParserEnv() == Config.getSecondaryParserEnv() && fetchProperty(
                 "PRIMARY_PARSER_TEMPLATE_ID").equals(fetchProperty("SECONDARY_PARSER_TEMPLATE_ID"))) {
-            System.out.println("Invalid Comparison. Can't compare identical combinations of parser,environment and template");
+            log.error("Invalid Comparison. Can't compare identical combinations of parser,environment and template");
             return false;
         }
         if (parsers.contains(ParserName.BUMBLEBEE) && parsers.contains(ParserName.PANDORASTREET)) {
-            System.out.println("Cannot compare BUMBLEEBEE responses with PANDORASTREET");
+            log.error("Cannot compare BUMBLEEBEE responses with PANDORASTREET");
             return false;
         } else {
             return true;

@@ -4,6 +4,7 @@ import static TEST_HARNESS.utils.Util.fetchProperty;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -11,6 +12,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+@Slf4j
 public class Pandorastreet extends Parser {
     public Pandorastreet(ParserType parserType, String fileName) {
         super(parserType, fileName);
@@ -31,7 +33,7 @@ public class Pandorastreet extends Parser {
                 saveResponse(response.body().bytes(), fileName);
                 return true;
             } else {
-                System.out.println("On " + this.envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
+                log.warn("On " + this.envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);
             }
         } catch (IOException e) {
             e.printStackTrace();

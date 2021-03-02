@@ -27,7 +27,9 @@ import TEST_HARNESS.result.pojos.NullCheck;
 import TEST_HARNESS.result.pojos.StandaloneResult;
 import TEST_HARNESS.result.pojos.StandaloneResults;
 import TEST_HARNESS.result.pojos.TemplateFAILURETYPE;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GenerateResults {
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -109,8 +111,8 @@ public class GenerateResults {
             writeTofile("SecondaryParserExclusiveFields", mapper.writeValueAsString(leftOnly));
             writeTofile("PrimaryParserExclusiveFields", mapper.writeValueAsString(rightOnly));
         }
-        System.out.printf("Results generated for %d files\n",
-                getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR").size());
+        log.info(String.format("Results generated for %d files",
+                getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR", "PRIMARY_DIR").size()));
     }
 
     public JSONArray generateNullFieldsResults(Map<String, JSONArray> map) {

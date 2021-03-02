@@ -3,12 +3,14 @@ package TEST_HARNESS.download;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+@Slf4j
 public class ScraperDownloader extends Downloader {
     public ScraperDownloader(String objectId, String userId, BlockingQueue<String> pBlockingQueue, BlockingQueue<String> sBlockingQueue) {
         super(objectId, userId, pBlockingQueue, sBlockingQueue);
@@ -25,7 +27,7 @@ public class ScraperDownloader extends Downloader {
             savePDFFile(response.body().bytes(), objectId);
 
         } else {
-            System.out.println("For downloading file: " + objectId + ", got response code " + response.code());
+            log.warn("For downloading file: " + objectId + ", got response code " + response.code());
 
         }
     }

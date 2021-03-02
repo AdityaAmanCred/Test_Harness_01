@@ -30,8 +30,10 @@ import TEST_HARNESS.utils.Util;
 import TEST_HARNESS.result.pojos.Variance;
 import TEST_HARNESS.parse.ParserType;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
+@Slf4j
 public class Comparator {
     private Map<String, Object> filteredLeftMap;
 
@@ -67,7 +69,7 @@ public class Comparator {
         rightFlatMap.keySet().forEach(k -> allfields.add(k));
         String otherDir = Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR";
         if (otherDir.equals("SECONDARY_DIR")) {
-            System.out.println("Comparing responses for file: " + fileName);
+            log.info("Comparing responses for file: " + fileName);
             Map<String, Object> leftFlatMap = Util.flatten(filteredLeftMap);
             leftFlatMap.keySet().forEach(k -> allfields.add(k));
             MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
@@ -110,7 +112,7 @@ public class Comparator {
         List<String> FileNames = getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR",
                 "PRIMARY_DIR");
         for (String filename : FileNames) {
-            System.out.println("Performing Standalone analysis for file: " + filename);
+            log.info("Performing Standalone analysis for file: " + filename);
             Object parserResponse = readJsonFile(fetchProperty("PRIMARY_DIR") + filename + ".json");
             SSPOJO requestBody = generateSSPojoRequestBody(parserResponse);
             Integer statusCode = StandaloneMode.generateStatement(objectMapper.writeValueAsString(requestBody));
