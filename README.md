@@ -81,6 +81,22 @@ PRIMARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-lim
 NUM_SECONDARYPARSER_THREADS=n(Where n is an integer that represents fixed number of threads, you want to spawn for your secondary parser)  
 SECONDARY_PARSER_RATELIMIT=r(Where r is a decimal that represents parsing rate-limit for secondary parser) 
 
+## Transaction Inspection
+
+The class **TransactionsInspector.java**'s method 'inspectTransactions\(\)' does the following:
+
+* Compares the domestic-transactions captured by the two parsers and collates the information file-wise in TransactionsInspectionResults.json as under:
+
+1. Primary\_Parser\_Transaction\_Capture\_Failures : Cases wherein transactions that were captured by Secondary parser but not captured by Primary parser.
+2. Secondary\_Parser\_Transaction\_Capture\_Failures : Cases wherein transactions that were captured by Primary but not captured by Secondary parser.
+3. Other\_Transaction\_Differences: Cases that do not fall in either of above two categories.
+
+* Captures those transactions whose transaction-amount has been captured as a negative number by the Primary parser. 
+
+**NOTE**: The first part is implemented using hashing. This solves for issues arising out of index based comparison where in if one parsers fails to capture one of more transactions and the other parser did, the whole comparison would be rendered futile.  
+
+
+
 ## Note:
 * Name the directories on your local identical to the directory names mentioned under 'Parser Details' section.  
 ['PDF_DOWNLOAD_LOC,'PRIMARY_DIR','SECONDARY_DIR','RESULT_DIR']  
