@@ -11,8 +11,10 @@ import TEST_HARNESS.Application;
 import TEST_HARNESS.config.CompareAgainst;
 import TEST_HARNESS.config.Config;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 abstract class Downloader implements Runnable {
     protected String objectId;
 
@@ -36,9 +38,8 @@ abstract class Downloader implements Runnable {
         try {
             OutputStream os = new FileOutputStream(file);
             os.write(bytes);
-            System.out.println(
-                    String.format("DownloadThread:[%s] downloaded %s. DownloadCount: %d", Thread.currentThread().getId(), fileName + ".pdf",
-                            ++DownloadExecutor.downloadcount));
+            log.info(String.format("DownloadThread:[%s] downloaded %s. DownloadCount: %d", Thread.currentThread().getId(), fileName + ".pdf",
+                    ++DownloadExecutor.downloadcount));
             os.close();
             DownloadExecutor.downloadedFiles.add(fileName);
             this.pBlockingQueue.put(fileName);
@@ -46,7 +47,7 @@ abstract class Downloader implements Runnable {
                 this.sBlockingQueue.put(fileName);
             }
         } catch (Exception e) {
-            System.out.println("Error in downloading file: " + fileName + " :" + e);
+            log.warn("Error in downloading file: " + fileName + " :" + e);
         }
     }
 

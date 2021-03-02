@@ -6,12 +6,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Prithvi Patil
  * @version 1.0
  */
 @Data
+@Slf4j
 public abstract class Parser implements Runnable {
     protected ParserType parserType;
 
@@ -81,13 +83,12 @@ public abstract class Parser implements Runnable {
         try {
             OutputStream os = new FileOutputStream(file);
             os.write(bytes);
-            System.out.println(
-                    String.format("ParsingThread:[%d] fetched %s Parser response for %s.", Thread.currentThread().getId(), this.parserType,
-                            fileName));
+            log.info(String.format("ParsingThread:[%d] fetched %s Parser response for %s.", Thread.currentThread().getId(), this.parserType,
+                    fileName));
 
             os.close();
         } catch (Exception e) {
-            System.out.println(fileName + ".pdf: Exception: " + e);
+            log.error(fileName + ".pdf: Exception: " + e);
         }
     }
 }

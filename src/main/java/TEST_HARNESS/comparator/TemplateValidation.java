@@ -22,8 +22,10 @@ import TEST_HARNESS.result.pojos.RBLPojo;
 import TEST_HARNESS.utils.JsonUtils;
 import TEST_HARNESS.utils.Util;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 public class TemplateValidation {
     private Map<TemplateFAILURETYPE, ArrayList<Pair<String, Double>>> validationMap = new HashMap<>();
 
@@ -31,7 +33,7 @@ public class TemplateValidation {
         List<String> FileNames = getCommonFileNames(Config.getCompareAgainst() == CompareAgainst.SECONDARY ? "SECONDARY_DIR" : "PRIMARY_DIR",
                 "PRIMARY_DIR");
         for (String filename : FileNames) {
-            System.out.println("Performing Template Validation for file: " + filename);
+            log.info("Performing Template Validation for file: " + filename);
             JsonObject parserResponse = readGsonFile(fetchProperty("PRIMARY_DIR") + filename + ".json").getAsJsonObject();
             RBLPojo rblPojo = generateRBLPojoObject(parserResponse, filename);
             if (isRblPojoObjNULL(rblPojo)) {
