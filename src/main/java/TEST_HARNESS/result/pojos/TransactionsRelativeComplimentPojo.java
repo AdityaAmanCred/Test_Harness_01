@@ -21,7 +21,7 @@ public class TransactionsRelativeComplimentPojo extends Object {
     @Expose
     private JsonArray primaryMinusSecondaryTransactions;
 
-    @SerializedName ("Secondary_Minus_Secondary_Transactions")
+    @SerializedName ("Secondary_Minus_Primary_Transactions")
     @Expose
     private JsonArray secondaryMinusPrimaryTransactions;
 
