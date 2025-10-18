@@ -1,0 +1,33 @@
+PRIMARY_PARSER_NAME=BUMBLEBEE
+SECONDARY_PARSER_NAME=BUMBLEBEE
+ISSUER=eatclub
+PRIMARY_PARSER_TEMPLATE_ID=eatclub_body_v1
+SECONDARY_PARSER_TEMPLATE_ID=eatclub_body_v1
+PRIMARY_PARSER_ENV=STAGE
+SECONDARY_PARSER_ENV=STAGE
+COMPARISON_MODE=STANDALONE
+#COMPARISON_MODE=SECONDARY
+SECONDARY_MODE_STANDALONE_ANALYSIS_DISABLED=true
+PDF_DOWNLOAD_LOC=D:/Rules/eatclub/TH_Data/Users/Text/
+PRIMARY_DIR=D:/Script_for_TEST_HARNESS/TH-NEW 2/src/test/resources/PrimaryResponses/
+SECONDARY_DIR=D:/Script_for_TEST_HARNESS/TH-NEW 2/src/test/resources/SecondaryResponses/
+RESULT_DIR=D:/Script_for_TEST_HARNESS/TH-NEW 2/src/test/resources/Results/
+FILE_IDS_CSV=D:/Rules/axis/objsbdbect_id_user_id.csv
+KEY_FILTER=**
+
+
+//CONCURRENCY_AND_RATE_LIMIT_Details
+NUM_DOWNLOAD_THREADS=1
+DOWNLOAD_RATELIMIT=1.0
+NUM_PRIMARYPARSER_THREADS=2
+PRIMARY_PARSER_RATELIMIT=2
+NUM_SECONDARYPARSER_THREADS=2
+SECONDARY_PARSER_RATELIMIT=2
+
+
+//API_URLS
+BUMBLEBEE_FQDN=http://optimus.%s.dreamplug.net/xfmr/v1/text2data
+OPTIMUS_FQDN=http://optimus.%s.dreamplug.net/pdf_to_json/file_stream/test/%s
+OPTIMUS_LOCAL=http://localhost:9900/pdf_to_json/file_stream/test/%s
+PANDORASTREET_FQDN=http://pandorastreet.%s.dreamplug.net/rocketpdf/api/test/pdf
+STATEMENT_GENERATION_API_FQDN=http://statement-service.stg.dreamplug.net/statement/consumer/consolidate
