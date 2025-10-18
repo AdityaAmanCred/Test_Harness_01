@@ -50,7 +50,9 @@ public final class Util {
     }
 
     public static Map<String, Object> flatten(Map<String, Object> map) {
-        return map.entrySet().stream().flatMap(Util::flatten)
+        return map.entrySet()
+                  .stream()
+                  .flatMap(Util::flatten)
                   .collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), LinkedHashMap::putAll);
     }
 
@@ -62,12 +64,15 @@ public final class Util {
 
         if (entry.getValue() instanceof Map<?, ?>) {
             Map<?, ?> properties = (Map<?, ?>) entry.getValue();
-            return properties.entrySet().stream().flatMap(e -> flatten(new SimpleEntry<>(entry.getKey() + "." + e.getKey(), e.getValue())));
+            return properties.entrySet()
+                             .stream()
+                             .flatMap(e -> flatten(new SimpleEntry<>(entry.getKey() + "." + e.getKey(), e.getValue())));
         }
 
         if (entry.getValue() instanceof List<?>) {
             List<?> list = (List<?>) entry.getValue();
-            return IntStream.range(0, list.size()).mapToObj(i -> new SimpleEntry<String, Object>(entry.getKey() + "." + i, list.get(i)))
+            return IntStream.range(0, list.size())
+                            .mapToObj(i -> new SimpleEntry<String, Object>(entry.getKey() + "." + i, list.get(i)))
                             .flatMap(Util::flatten);
         }
 
@@ -75,9 +80,13 @@ public final class Util {
     }
 
     public static List<String> getCommonFileNames(String folderLoc1, String folderLoc2) {
-        Set<String> expectedOutputFiles = getNames(folderLoc1).stream().collect(Collectors.toSet());
-        Set<String> stageFiles = getNames(folderLoc2).stream().collect(Collectors.toSet());
-        return Sets.intersection(expectedOutputFiles, stageFiles).stream().collect(Collectors.toList());
+        Set<String> expectedOutputFiles = getNames(folderLoc1).stream()
+                                                              .collect(Collectors.toSet());
+        Set<String> stageFiles = getNames(folderLoc2).stream()
+                                                     .collect(Collectors.toSet());
+        return Sets.intersection(expectedOutputFiles, stageFiles)
+                   .stream()
+                   .collect(Collectors.toList());
     }
 
     public static Set<String> getNames(String folderName) {
@@ -87,8 +96,10 @@ public final class Util {
         //fileNames = new ArrayList<String>();
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
-                if (listOfFiles[i].getName().split("\\.").length == 2) {
-                    String fileName = listOfFiles[i].getName().split("\\.")[0];
+                if (listOfFiles[i].getName()
+                                  .split("\\.").length == 2) {
+                    String fileName = listOfFiles[i].getName()
+                                                    .split("\\.")[0];
                     if (fileName.length() != 0) {
                         stringList.add(fileName);
                     }
@@ -153,10 +164,16 @@ public final class Util {
             CSVReader reader = new CSVReader(new FileReader(fileLoc));
             String[] nextLine;
             if ((nextLine = reader.readNext()) != null && !trimDoubleQuotes(nextLine[0]).contains("id")) {
-                stringMatrix.add(Arrays.asList(nextLine).stream().map(s -> trimDoubleQuotes(s)).collect(Collectors.toList()));
+                stringMatrix.add(Arrays.asList(nextLine)
+                                       .stream()
+                                       .map(s -> trimDoubleQuotes(s))
+                                       .collect(Collectors.toList()));
             }
             while ((nextLine = reader.readNext()) != null) {
-                stringMatrix.add(Arrays.asList(nextLine).stream().map(s -> trimDoubleQuotes(s)).collect(Collectors.toList()));
+                stringMatrix.add(Arrays.asList(nextLine)
+                                       .stream()
+                                       .map(s -> trimDoubleQuotes(s))
+                                       .collect(Collectors.toList()));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -167,7 +184,8 @@ public final class Util {
     }
 
     public static Object removeRedundantDifference(Object obj) {
-        if (obj == null || obj.toString().equals("")) {
+        if (obj == null || obj.toString()
+                              .equals("")) {
             return "null";
         } else if ((obj instanceof Double) || (obj instanceof Integer)) {
             return Double.parseDouble(obj.toString());
@@ -185,7 +203,8 @@ public final class Util {
 
         parsers.add(Config.getPrimaryParserName());
         parsers.add(Config.getSecondaryParserName());
-        if (parsers.get(0).equals(parsers.get(1)) && Config.getPrimaryParserEnv() == Config.getSecondaryParserEnv() && fetchProperty(
+        if (parsers.get(0)
+                   .equals(parsers.get(1)) && Config.getPrimaryParserEnv() == Config.getSecondaryParserEnv() && fetchProperty(
                 "PRIMARY_PARSER_TEMPLATE_ID").equals(fetchProperty("SECONDARY_PARSER_TEMPLATE_ID"))) {
             log.error("Invalid Comparison. Can't compare identical combinations of parser,environment and template");
             return false;
@@ -234,8 +253,12 @@ public final class Util {
     public static JSONObject getIssuerDetails(JSONObject jsonObject, String issuer) {
         JSONArray issuers = (JSONArray) jsonObject.get("issuers");
         for (Object issuerJson : issuers) {
-            if (((JSONObject) issuerJson).get("issuer_name").toString().replaceAll("\\s+", "").toLowerCase()
-                                         .equals(issuer.replaceAll("\\s+", "").toLowerCase())) {
+            if (((JSONObject) issuerJson).get("issuer_name")
+                                         .toString()
+                                         .replaceAll("\\s+", "")
+                                         .toLowerCase()
+                                         .equals(issuer.replaceAll("\\s+", "")
+                                                       .toLowerCase())) {
                 return (JSONObject) issuerJson;
             }
         }
@@ -243,8 +266,10 @@ public final class Util {
     }
 
     public static String getMainJsonFieldName() {
-        if (Config.getPrimaryParserName().equals(ParserName.BUMBLEBEE) || (Config.getPrimaryParserName().equals(ParserName.OPTIMUS) && Config
-                .getSecondaryParserName().equals(ParserName.BUMBLEBEE))) {
+        if (Config.getPrimaryParserName()
+                  .equals(ParserName.BUMBLEBEE) || (Config.getPrimaryParserName()
+                                                          .equals(ParserName.OPTIMUS) && Config.getSecondaryParserName()
+                                                                                               .equals(ParserName.BUMBLEBEE))) {
             return "transformed_data";
         } else {
             return "json_object";
@@ -264,8 +289,8 @@ public final class Util {
     public static ParserName getParserNameForParserType(ParserType parserType) {
         ParserName parserName = null;
         if (parserType == ParserType.PRIMARY) {
-            if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET") || fetchProperty("PRIMARY_PARSER_NAME")
-                    .equalsIgnoreCase("PANDORA")) {
+            if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("PANDORASTREET") || fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase(
+                    "PANDORA")) {
                 parserName = ParserName.PANDORASTREET;
             } else if (fetchProperty("PRIMARY_PARSER_NAME").equalsIgnoreCase("OPTIMUS")) {
                 parserName = ParserName.OPTIMUS;
@@ -314,7 +339,8 @@ public final class Util {
     }
 
     public static void setParserEnvironments() {
-        Config.setPrimaryParserEnv(fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
+        Config.setPrimaryParserEnv(fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : fetchProperty(
+                "PRIMARY_PARSER_ENV").equalsIgnoreCase("LOCAL") ? Environment.LOCAL : Environment.PROD);
         Config.setSecondaryParserEnv(fetchProperty("SECONDARY_PARSER_ENV").equalsIgnoreCase("STAGE") ? Environment.STAGE : Environment.PROD);
     }
 

@@ -115,7 +115,8 @@ public class TransactionsInspector {
                 Double txnAmount = JsonUtils.hasKeyWithNonNullValue(dT.getAsJsonObject(), "txn_amount") ? JsonUtils
                         .getJsonElement(dT.getAsJsonObject(), "txn_amount").getAsDouble() : null;
                 Date txnDate = format.parse(txnDateStr);
-                Date billedDate = format.parse(txnBilledDateStr);
+               // Date billedDate = format.parse(txnBilledDateStr);
+                Date billedDate = format.parse(txnDateStr);
                 DomesticTransaction domesticTransaction = new DomesticTransaction(txnDate, txnTypeStr, txnDescStr, billedDate, txnAmount);
                 domesticTransactionsList.add(domesticTransaction);
             }

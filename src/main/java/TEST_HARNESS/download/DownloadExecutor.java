@@ -46,7 +46,7 @@ public class DownloadExecutor implements Runnable {
 
     private int maxNumberOfDownloadThreads = 5;
 
-    private int maxDownloadRate = 2;
+    private int maxDownloadRate = 5;
 
     public DownloadExecutor(DownloaderName downloaderName) {
         this.numberOfDownloadThreads = Math.min(maxNumberOfDownloadThreads, Integer.parseInt(fetchProperty("NUM_DOWNLOAD_THREADS")));
@@ -103,6 +103,7 @@ public class DownloadExecutor implements Runnable {
     }
 
     private Downloader getDownloader(DownloaderName downloaderName, String objectId, String userId) {
+       // return (downloaderName == DownloaderName.PORTKEY) ? new PortkeyDownloader(objectId, userId, this.pBlockingQueue,
         return (downloaderName == DownloaderName.PORTKEY) ? new PortkeyDownloader(objectId, userId, this.pBlockingQueue,
                 this.sBlockingQueue) : new ScraperDownloader(objectId, userId, this.pBlockingQueue, this.sBlockingQueue);
     }

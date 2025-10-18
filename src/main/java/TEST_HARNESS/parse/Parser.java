@@ -42,8 +42,10 @@ public abstract class Parser implements Runnable {
     private void setEnvName() {
         if (parserEnvironment == Environment.PROD) {
             this.envName = "prod";
-        } else {
+        } else if (parserEnvironment == Environment.STAGE) {
             envName = "stg";
+        } else {
+            envName = "local";
         }
     }
 
@@ -51,7 +53,10 @@ public abstract class Parser implements Runnable {
         if (parserType == ParserType.PRIMARY) {
             if (fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("STAGE")) {
                 parserEnvironment = Environment.STAGE;
-            } else {
+            } else if (fetchProperty("PRIMARY_PARSER_ENV").equalsIgnoreCase("LOCAL")) {
+                parserEnvironment = Environment.LOCAL;
+            }
+            else {
                 parserEnvironment = Environment.PROD;
             }
 

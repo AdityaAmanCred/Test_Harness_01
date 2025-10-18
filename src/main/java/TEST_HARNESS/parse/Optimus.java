@@ -3,6 +3,7 @@ package TEST_HARNESS.parse;
 import static TEST_HARNESS.utils.Util.fetchProperty;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
@@ -28,20 +29,40 @@ public class Optimus extends Parser {
         if (otherParser.equalsIgnoreCase("BUMBLEBEE")) {
             apiUrlSuffix = "transformed_data";
         }
-        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                                                .build();
         MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("pdf_to_transform", fileName,
-                RequestBody.create(MediaType.parse("application/octet-stream"), new File(pdfLocation + fileName)))
-                                                      .addFormDataPart("config_id", this.templateId).build();
-        Request request = new Request.Builder().url(String.format(fetchProperty("OPTIMUS_FQDN"), this.envName, this.apiUrlSuffix))
-                                               .method("POST", body).addHeader("Accept", "*/*").addHeader("Accept-Encoding", "gzip, deflate")
-                                               .addHeader("cache-control", "no-cache")
-                                               .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
-                                               .build();
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                                                      .addFormDataPart("pdf_to_transform", fileName,
+                                                              RequestBody.create(MediaType.parse("application/octet-stream"),
+                                                                      new File(pdfLocation + fileName)))
+                                                      .addFormDataPart("config_id", this.templateId)
+                                                      .build();
+        //--make change--//
+        Request request;
+        if (Objects.equals(this.envName, "local")) {
+            request = new Request.Builder().url(String.format(fetchProperty("OPTIMUS_LOCAL"), this.apiUrlSuffix))
+                                           .method("POST", body)
+                                           .addHeader("Accept", "*/*")
+                                           .addHeader("Accept-Encoding", "gzip, deflate")
+                                           .addHeader("cache-control", "no-cache")
+                                           .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
+                                           .build();
+        } else {
+            request = new Request.Builder().url(String.format(fetchProperty("OPTIMUS_FQDN"), this.envName, this.apiUrlSuffix))
+                                           .method("POST", body)
+                                           .addHeader("Accept", "*/*")
+                                           .addHeader("Accept-Encoding", "gzip, deflate")
+                                           .addHeader("cache-control", "no-cache")
+                                           .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW")
+                                           .build();
+        }
         try {
-            Response response = client.newCall(request).execute();
+            Response response = client.newCall(request)
+                                      .execute();
             if (response.code() >= 200 && response.code() < 300) {
-                saveResponse(response.body().bytes(), fileName);
+                saveResponse(response.body()
+                                     .bytes(), fileName);
                 return true;
             } else {
                 log.warn("On " + this.envName + " ResponseCode: " + response.code() + " for " + fileName.split("\\.")[0]);

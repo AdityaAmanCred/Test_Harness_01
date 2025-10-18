@@ -5,7 +5,6 @@ import static TEST_HARNESS.utils.Util.setParserNames;
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
 import TEST_HARNESS.comparator.Comparator;
-import TEST_HARNESS.comparator.TransactionsInspector;
 import TEST_HARNESS.download.DownloadExecutor;
 import TEST_HARNESS.download.DownloaderName;
 import TEST_HARNESS.parse.ParsePdf;
@@ -42,24 +41,26 @@ public class Application {
 
     }
 
+
+
     public static void main(String[] args) throws IOException, ParseException, InterruptedException, java.text.ParseException {
-        ////Download the PDFs
+
+
+        //Download the PDFs
         downloadThread.start();
 
-        ////Fetch Transformed JSONs from Parsers
+        //Fetch Transformed JSONs from Parsers
         parsingThread.start();
 
-        ////Running Comparator
+        //Running Comparator
         waitForDownloadAndParsingThreadsToTerminate();
         Comparator comparator = new Comparator();
         comparator.compareAll();
-
-        ////Generate Results
+        //Generate Results
         GenerateResults generateResults = new GenerateResults();
         generateResults.generate(comparator);
-
-        ////Inspect Domestic Transactions
-        TransactionsInspector transactionsInspector = new TransactionsInspector();
-        transactionsInspector.inspectTransactions();
+        //Inspect Domestic Transactions
+        /*TransactionsInspector = new TransactionsInspector();
+        transactionsInspector.inspectTransactions();*/
     }
 }
